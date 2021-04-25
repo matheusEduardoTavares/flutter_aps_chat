@@ -1,5 +1,5 @@
-import 'package:aps_chat/providers/configs/configs.dart';
-import 'package:aps_chat/providers/user_provider/user_provider.dart';
+import 'package:aps_chat/providers/theme_config_provider/theme_config_provider.dart';
+import 'package:aps_chat/utils/colors_default/colors_default.dart';
 import 'package:aps_chat/utils/db_util.dart';
 import 'package:aps_chat/utils/navigator_config.dart';
 import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
@@ -13,19 +13,21 @@ class InitialPage extends StatefulWidget {
 }
 
 class _InitialPageState extends State<InitialPage> {
-  final _primaryColor = Colors.purple;
-  final _accentColor = Colors.orangeAccent;
+  final _defaultBorderRadius = BorderRadius.circular(30.0);
 
   @override 
   void initState() {
     super.initState();
 
     DbUtil.initDb().then((_) {
-      DbUtil.getData().then((user) {
-        if (user != null) {
-          Provider.of<UserProvider>(context, listen: false).updateUser(user.first);
+      DbUtil.getTheme().then((isDarkTheme) {
+        final ctx = NavigatorConfig.navKey.currentState.overlay.context;
+        if (isDarkTheme != null) {
+          Provider.of<ThemeConfigProvider>(ctx, listen: false)
+            .updateTheme(isDarkTheme);
         }
-        Navigator.of(NavigatorConfig.navKey.currentState.overlay.context)
+
+        Navigator.of(ctx)
           .pushReplacementNamed(PagesConfigs.loginPage);
       });
     });
@@ -35,52 +37,46 @@ class _InitialPageState extends State<InitialPage> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<Configs>(
-          create: (ctx) => Configs(),
-          lazy: true,
-        ),
-        ChangeNotifierProvider<UserProvider>(
-          create: (ctx) => UserProvider(),
+        ChangeNotifierProvider<ThemeConfigProvider>(
+          create: (ctx) => ThemeConfigProvider(),
           lazy: true,
         ),
       ],
       builder: (ctx, _) {
-        final brightness = Provider.of<Configs>(ctx).appBrightness;
-        final _isDarkMode = brightness == Brightness.dark;
+        final brightness = Provider.of<ThemeConfigProvider>(ctx).appBrightness;
         return MaterialApp(
           title: 'ProjectComplete',
           initialRoute: PagesConfigs.splashPage,
           routes: PagesConfigs.pages,
           navigatorKey: NavigatorConfig.navKey,
           theme: ThemeData(
-            floatingActionButtonTheme: FloatingActionButtonThemeData(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+            iconTheme: IconThemeData(
+              color: Colors.white,
+              size: 60,
             ),
+            primaryColor: ColorsDefault.blueColor,
+            accentColor: ColorsDefault.marineColor,
+            brightness: brightness,
             appBarTheme: AppBarTheme(
-              backgroundColor: _primaryColor,
-              brightness: Brightness.dark,
               centerTitle: true,
             ),
-            primaryColor: _primaryColor,
-            accentColor: _accentColor,
+            inputDecorationTheme: InputDecorationTheme(
+              border: OutlineInputBorder(
+                borderRadius: _defaultBorderRadius,
+              ),
+            ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(_primaryColor),
-              ),
-            ),
-            textButtonTheme: TextButtonThemeData(
-              style: ButtonStyle(
-                foregroundColor: MaterialStateProperty.all(
-                  _isDarkMode ? Colors.white : _primaryColor,
+                shape: MaterialStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: _defaultBorderRadius,
+                  ),
                 ),
-                overlayColor: MaterialStateProperty.all(
-                  _isDarkMode ? Colors.grey.withOpacity(0.2) : 
-                    Colors.purple.withOpacity(0.2)
+                backgroundColor: MaterialStateProperty.all(
+                  ColorsDefault.blueColor,
                 ),
               ),
             ),
-            brightness: brightness,
           ),
         );
       },

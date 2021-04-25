@@ -3,15 +3,16 @@ import 'package:aps_chat/utils/textformfields_validator/textformfields_validator
 import 'package:aps_chat/widgets/custom_drawer/custom_drawer.dart';
 import 'package:flutter/material.dart';
 
-class LoginPage extends StatefulWidget {
+typedef ValidatorsFunction = String Function(String);
+
+class SignUpPage extends StatefulWidget {
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  _SignUpPageState createState() => _SignUpPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignUpPageState extends State<SignUpPage> {
   TextEditingController _nameController;
-
   TextEditingController _passwordController;
 
   @override 
@@ -26,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: const Text('Criar Conta'),
       ),
       drawer: CustomDrawer(),
       body: SafeArea(
@@ -60,6 +61,13 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       TextFormField(
                         decoration: InputDecoration(
+                          labelText: 'Nome do usuário',
+                        ),
+                        validator: TextFormFieldsValidator.validators['name'],
+                      ),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        decoration: InputDecoration(
                           labelText: 'Email',
                         ),
                         validator: TextFormFieldsValidator.validators['email'],
@@ -72,6 +80,19 @@ class _LoginPageState extends State<LoginPage> {
                         validator: TextFormFieldsValidator.validators['password'],
                       ),
                       const SizedBox(height: 20),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Confirmar Senha',
+                        ),
+                        validator: (value) {
+                          if (value != _passwordController.value.text) {
+                            return 'Senhas estão diferentes';
+                          }
+
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -80,10 +101,8 @@ class _LoginPageState extends State<LoginPage> {
               Container(
                 width: MediaQuery.of(context).size.width * 0.8,
                 child: ElevatedButton(
-                  child: const Text('LOGIN'),
+                  child: const Text('Criar Conta'),
                   onPressed: () {
-                    print('clicado');
-                    Navigator.of(context).pushNamed(PagesConfigs.configsPage);
                   },
                 ),
               ),
@@ -91,11 +110,11 @@ class _LoginPageState extends State<LoginPage> {
               Container(
                 width: MediaQuery.of(context).size.width * 0.8,
                 child: TextButton(
-                  child: const Text('Ainda não possui conta ? Crie uma conta'),
+                  child: const Text('Já possui conta ? Faça o login'),
                   onPressed: () {
-                    print('clicado em criar conta');
-                    CustomDrawer.changePage(PagesConfigs.signUpPage);
-                    Navigator.of(context).pushReplacementNamed(PagesConfigs.signUpPage);
+                    print('clicado em fazer login');
+                    CustomDrawer.changePage(PagesConfigs.loginPage);
+                    Navigator.of(context).pushReplacementNamed(PagesConfigs.loginPage);
                   },
                 ),
               ),
