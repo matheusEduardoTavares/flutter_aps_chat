@@ -3,9 +3,9 @@ import 'package:aps_chat/utils/colors_default/colors_default.dart';
 import 'package:aps_chat/utils/db_util.dart';
 import 'package:aps_chat/utils/navigator_config.dart';
 import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 class InitialPage extends StatefulWidget {
 
   @override
@@ -27,8 +27,10 @@ class _InitialPageState extends State<InitialPage> {
             .updateTheme(isDarkTheme);
         }
 
-        Navigator.of(ctx)
-          .pushReplacementNamed(PagesConfigs.loginPage);
+        Firebase.initializeApp().then((_) {
+          Navigator.of(ctx)
+            .pushReplacementNamed(PagesConfigs.authPage);
+        });
       });
     });
   }

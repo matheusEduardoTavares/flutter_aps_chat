@@ -2,17 +2,10 @@ import 'package:aps_chat/models/details_page.dart';
 import 'package:aps_chat/utils/get_images/get_images.dart';
 import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
 import 'package:aps_chat/widgets/opacity_request/opacity_request.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class CustomDrawer extends StatefulWidget {
-  CustomDrawer({
-    this.pages,
-    this.hasLogoutButton = false,
-  });
-
-  final List<DetailsPage> pages;
-  final bool hasLogoutButton;
-  
+class UserCustomDrawer extends StatefulWidget {
   static int _selectedIndex = 0;
 
   static void changePage(String newPage, [List<DetailsPage> pages]) {
@@ -27,15 +20,16 @@ class CustomDrawer extends StatefulWidget {
   }
 
   @override
-  _CustomDrawerState createState() => _CustomDrawerState();
+  _UserCustomDrawerState createState() => _UserCustomDrawerState();
 }
 
-class _CustomDrawerState extends State<CustomDrawer> {
+class _UserCustomDrawerState extends State<UserCustomDrawer> {
   var _isLoadingLogout = false;
 
   @override 
   Widget build(BuildContext context) {
-    final pagesItems = PagesConfigs.detailsPage;
+    final pagesItems = PagesConfigs.detailsLoggedPages;
+    final _auth = FirebaseAuth.instance;
 
     return OpacityRequest(
       isLoading: _isLoadingLogout,
@@ -68,7 +62,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     elevation: 5.0,
                     shadowColor: Colors.grey,
                     child: ListTile(
-                      selected: CustomDrawer._selectedIndex == index,
+                      selected: UserCustomDrawer._selectedIndex == index,
                       leading: pagesItems[index].leading ?? Icon(
                         pagesItems[index].leadingData,
                       ),
@@ -78,7 +72,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         ),
                       ),
                       onTap: () {
-                        CustomDrawer.changePage(pagesItems[index].goToNamedRoute);
+                        UserCustomDrawer.changePage(pagesItems[index].goToNamedRoute);
                         Navigator.of(context).pushReplacementNamed(
                           pagesItems[index].goToNamedRoute,
                         );
@@ -88,28 +82,22 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 ),
               ),
             ),
-            if (widget.hasLogoutButton ?? false)
-              Container(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () async {
-                        setState(() {
-                          _isLoadingLogout = true;
-                        });
-                        // Navigator.of(context).pushReplacementNamed(
-                        //   Routes.homePage,
-                        //   arguments: TransitionsPage(
-                        //     builder: (ctx) => HomePage(false),
-                        //   )
-                        // );
-                      },
-                      child: Text('Fazer Logout'),
-                    ),
-                  ],
-                ),
+            Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () async {
+                      setState(() {
+                        _isLoadingLogout = true;
+                      });
+                      await _auth.signOut();
+                    },
+                    child: Text('Fazer Logout'),
+                  ),
+                ],
               ),
+            ),
           ],
         ),
       ),

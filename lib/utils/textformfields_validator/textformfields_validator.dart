@@ -6,7 +6,7 @@ abstract class TextFormFieldsValidator {
       if (value == null || value.isEmpty) {
         return 'Digite um nome';
       }
-      else if (value.length < 3) {
+      else if (value.trim().length < 3) {
         return 'O nome deve conter pelo menos 4 caracteres';
       }
 
@@ -23,13 +23,14 @@ abstract class TextFormFieldsValidator {
       return null;
     },
     'email': (value) {
-      bool isEmailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-        .hasMatch(value);
-      
       if (value == null || value.isEmpty) {
-        return 'Digite um e-mail';
+        return 'Digite um e-mail válido';
       }
-      else if (!isEmailValid) {
+
+      bool isEmailValid = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+        .hasMatch(value.trim());
+      
+      if (!isEmailValid) {
         return 'Digite um e-mail válido';
       }
 
