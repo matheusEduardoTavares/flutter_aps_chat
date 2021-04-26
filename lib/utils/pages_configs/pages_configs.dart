@@ -5,6 +5,7 @@ import 'package:aps_chat/pages/home_page/home_page.dart';
 import 'package:aps_chat/pages/login_page/login_page.dart';
 import 'package:aps_chat/pages/signup_page/signup_page.dart';
 import 'package:aps_chat/pages/splash_page/splash_page.dart';
+import 'package:aps_chat/pages/user_data/user_data.dart';
 import 'package:flutter/material.dart';
 
 abstract class PagesConfigs {
@@ -14,6 +15,7 @@ abstract class PagesConfigs {
   static const signUpPage = '/signUpPage';
   static const homePage = '/homePage';
   static const authPage = '/authPage';
+  static const userDataPage = '/userDataPage';
 
   static final pages = <String, WidgetBuilder>{
     splashPage: (ctx) => SplashPage(),
@@ -22,6 +24,7 @@ abstract class PagesConfigs {
     signUpPage: (ctx) => SignUpPage(),
     homePage: (ctx) => HomePage(),
     authPage: (ctx) => AuthPage(),
+    userDataPage: (ctx) => UserData(),
   };
 
   static final detailsPage = <DetailsPage>[
@@ -47,6 +50,11 @@ abstract class PagesConfigs {
       goToNamedRoute: authPage,
       name: 'Página Inicial',
       leadingData: Icons.home,
+    ),
+    DetailsPage(
+      goToNamedRoute: userDataPage,
+      name: 'Dados',
+      leadingData: Icons.data_usage,
     ),
     DetailsPage(
       goToNamedRoute: configsPage,

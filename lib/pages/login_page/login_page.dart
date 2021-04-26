@@ -88,6 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         validator: TextFormFieldsValidator.validators['email'],
                         keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
@@ -103,6 +104,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         validator: TextFormFieldsValidator.validators['password'],
+                        textInputAction: TextInputAction.done,
                       ),
                       const SizedBox(height: 20),
                     ],

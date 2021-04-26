@@ -109,6 +109,8 @@ class _SignUpPageState extends State<SignUpPage> {
                           labelText: 'Nome do usuário',
                         ),
                         validator: TextFormFieldsValidator.validators['name'],
+                        textInputAction: TextInputAction.next,
+                        textCapitalization: TextCapitalization.words,
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
@@ -118,6 +120,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                         keyboardType: TextInputType.emailAddress,
                         validator: TextFormFieldsValidator.validators['email'],
+                        textInputAction: TextInputAction.next,
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
@@ -133,6 +136,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                         ),
                         validator: TextFormFieldsValidator.validators['password'],
+                        textInputAction: TextInputAction.next,
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
@@ -153,6 +157,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
                           return null;
                         },
+                        textInputAction: TextInputAction.done,
                       ),
                       const SizedBox(height: 20),
                     ],
