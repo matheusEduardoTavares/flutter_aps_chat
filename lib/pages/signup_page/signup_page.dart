@@ -21,7 +21,8 @@ class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance.collection('users');
-  var _showInvisiblePassword = false;
+  var _showInvisiblePassword = true;
+  var _isLoadingRequest = false;
 
   Future<void> _showErrorDialog(bool isErrorMailAlreadyExists) => showGeneralDialog(
     context: context,
@@ -113,8 +114,9 @@ class _SignUpPageState extends State<SignUpPage> {
                       TextFormField(
                         controller: _emailController,
                         decoration: InputDecoration(
-                          labelText: 'Email',
+                          labelText: 'E-mail',
                         ),
+                        keyboardType: TextInputType.emailAddress,
                         validator: TextFormFieldsValidator.validators['email'],
                       ),
                       const SizedBox(height: 20),
@@ -134,6 +136,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
+                        obscureText: _showInvisiblePassword,
                         decoration: InputDecoration(
                           labelText: 'Confirmar Senha',
                           suffixIcon: IconButton(
@@ -159,45 +162,61 @@ class _SignUpPageState extends State<SignUpPage> {
               const SizedBox(height: 20),
               Container(
                 width: MediaQuery.of(context).size.width * 0.8,
-                child: ElevatedButton(
-                  child: const Text('Criar Conta'),
-                  onPressed: () async {
-                    if (_formKey.currentState?.validate() ?? false) {
-                      try {
-                        final mail = _emailController.value.text.trim();
-                        final passwordField = _passwordController.value.text;
-                        final currentUser = await _auth.createUserWithEmailAndPassword(
-                          email: mail, 
-                          password: passwordField,
-                        );
+                child: Container(
+                  height: 50,
+                  child: ElevatedButton(
+                    child: _isLoadingRequest ? Center(child: CircularProgressIndicator()) : const Text('Criar Conta'),
+                    onPressed: () async {
+                      if (_formKey.currentState?.validate() ?? false) {
+                        try {
+                          setState(() {
+                            _isLoadingRequest = true;
+                          });
+                          final mail = _emailController.value.text.trim();
+                          final passwordField = _passwordController.value.text;
+                          final currentUser = await _auth.createUserWithEmailAndPassword(
+                            email: mail, 
+                            password: passwordField,
+                          );
 
-                        await _auth.signInWithEmailAndPassword(
-                          email: mail, 
-                          password: passwordField,
-                        );
+                          await _auth.signInWithEmailAndPassword(
+                            email: mail, 
+                            password: passwordField,
+                          );
 
-                        final data = {
-                          'name': _nameController.value.text.trim(),
-                          'email': currentUser.user.email,
-                          'createdAt': Timestamp.now(),
-                        };
+                          final data = {
+                            'name': _nameController.value.text.trim(),
+                            'email': currentUser.user.email,
+                            'createdAt': Timestamp.now(),
+                          };
 
-                        await _firestore.doc(
-                          currentUser.user.uid,
-                        ).set(data);
+                          await _firestore.doc(
+                            currentUser.user.uid,
+                          ).set(data);
 
-                        await _showSuccessDialog();
-                      }
-                      catch (e) {
-                        if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
-                          _showErrorDialog(true);
+                          await _showSuccessDialog();
+
+                          Navigator.of(context)
+                            .pushReplacementNamed(PagesConfigs.homePage);
                         }
-                        else {
-                          _showErrorDialog(false);
+                        catch (e) {
+                          if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
+                            _showErrorDialog(true);
+                          }
+                          else {
+                            _showErrorDialog(false);
+                          }
+                        }
+                        finally {
+                          if (mounted) {
+                            setState(() {
+                              _isLoadingRequest = false;
+                            });
+                          }
                         }
                       }
-                    }
-                  },
+                    },
+                  ),
                 ),
               ),
               const SizedBox(height: 20),

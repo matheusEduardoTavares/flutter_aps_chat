@@ -17,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _auth = FirebaseAuth.instance;
   var _showInvisiblePassword = true;
+  var _isLoadingRequest = false;
 
   Future<void> _showErrorDialog(bool isErrorCredentials) => showGeneralDialog(
     context: context,
@@ -83,9 +84,10 @@ class _LoginPageState extends State<LoginPage> {
                       TextFormField(
                         controller: _emailController,
                         decoration: InputDecoration(
-                          labelText: 'Email',
+                          labelText: 'E-mail',
                         ),
                         validator: TextFormFieldsValidator.validators['email'],
+                        keyboardType: TextInputType.emailAddress,
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
@@ -109,12 +111,17 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 20),
               Container(
+                height: 50,
                 width: MediaQuery.of(context).size.width * 0.8,
                 child: ElevatedButton(
-                  child: const Text('LOGIN'),
+                  child: _isLoadingRequest ? Center(child: CircularProgressIndicator()) : const Text('LOGIN'),
                   onPressed: () async {
                     if (_formKey.currentState?.validate() ?? false) {
                       try {
+                        setState(() {
+                          _isLoadingRequest = true;
+                        });
+                        
                         await _auth.signInWithEmailAndPassword(
                           email: _emailController.value.text.trim(), 
                           password: _passwordController.value.text,
@@ -125,6 +132,13 @@ class _LoginPageState extends State<LoginPage> {
                       }
                       catch (_) {
                         _showErrorDialog(false);
+                      }
+                      finally {
+                        if (mounted) {
+                          setState(() {
+                            _isLoadingRequest = false;
+                          });
+                        }
                       }
                     }
                   },

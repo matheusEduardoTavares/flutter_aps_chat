@@ -9,7 +9,7 @@ class UserCustomDrawer extends StatefulWidget {
   static int _selectedIndex = 0;
 
   static void changePage(String newPage, [List<DetailsPage> pages]) {
-    final filterInPages = PagesConfigs.detailsPage;
+    final filterInPages = PagesConfigs.detailsLoggedPages;
 
     var index = filterInPages.
       indexWhere((page) => page.goToNamedRoute == newPage);
@@ -86,18 +86,31 @@ class _UserCustomDrawerState extends State<UserCustomDrawer> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      setState(() {
-                        _isLoadingLogout = true;
-                      });
-                      await _auth.signOut();
-                    },
-                    child: Text('Fazer Logout'),
+                  Container(
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        setState(() {
+                          _isLoadingLogout = true;
+                        });
+
+                        await _auth.signOut();
+
+                        setState(() {
+                          _isLoadingLogout = false;
+                        });
+
+                        Navigator.of(context).pushReplacementNamed(
+                          PagesConfigs.authPage,
+                        );
+                      },
+                      child: _isLoadingLogout ? Center(child: CircularProgressIndicator()) : const Text('Fazer Logout'),
+                    ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

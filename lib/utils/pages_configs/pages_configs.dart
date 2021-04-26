@@ -26,7 +26,7 @@ abstract class PagesConfigs {
 
   static final detailsPage = <DetailsPage>[
     DetailsPage(
-      goToNamedRoute: loginPage,
+      goToNamedRoute: authPage,
       name: 'Login',
       leadingData: Icons.login,
     ),
@@ -44,7 +44,7 @@ abstract class PagesConfigs {
 
   static final detailsLoggedPages = <DetailsPage>[
     DetailsPage(
-      goToNamedRoute: homePage,
+      goToNamedRoute: authPage,
       name: 'Página Inicial',
       leadingData: Icons.home,
     ),

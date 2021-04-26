@@ -61,6 +61,7 @@ class _InitialPageState extends State<InitialPage> {
             brightness: brightness,
             appBarTheme: AppBarTheme(
               centerTitle: true,
+              brightness: Brightness.dark,
             ),
             inputDecorationTheme: InputDecorationTheme(
               border: OutlineInputBorder(
