@@ -41,6 +41,21 @@ class _SignUpPageState extends State<SignUpPage> {
     ),
   );
 
+  Future<void> _showSuccessDialog() => showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: '',
+    pageBuilder: (_, __, ___) => AlertDialog(
+      title: Text('Conta Criada com Sucesso !'),
+      actions: [
+        TextButton(
+          child: Text('OK'),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+    ),
+  );
+
   @override 
   void initState() {
     super.initState();
@@ -121,6 +136,12 @@ class _SignUpPageState extends State<SignUpPage> {
                       TextFormField(
                         decoration: InputDecoration(
                           labelText: 'Confirmar Senha',
+                          suffixIcon: IconButton(
+                            icon: Icon(_showInvisiblePassword ? 
+                              Icons.visibility_off : Icons.visibility),
+                            onPressed: () => setState(() => _showInvisiblePassword = !_showInvisiblePassword),
+                            color: Theme.of(context).accentColor,
+                          ),
                         ),
                         validator: (value) {
                           if (value != _passwordController.value.text) {
@@ -164,6 +185,8 @@ class _SignUpPageState extends State<SignUpPage> {
                         await _firestore.doc(
                           currentUser.user.uid,
                         ).set(data);
+
+                        await _showSuccessDialog();
                       }
                       catch (e) {
                         if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
