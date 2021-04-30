@@ -100,6 +100,8 @@ class _UserCustomDrawerState extends State<UserCustomDrawer> {
                           _isLoadingLogout = false;
                         });
 
+                        UserCustomDrawer.changePage(PagesConfigs.homePage);
+
                         Navigator.of(context).pushReplacementNamed(
                           PagesConfigs.authPage,
                         );

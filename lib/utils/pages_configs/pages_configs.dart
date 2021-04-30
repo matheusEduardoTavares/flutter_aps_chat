@@ -47,7 +47,7 @@ abstract class PagesConfigs {
 
   static final detailsLoggedPages = <DetailsPage>[
     DetailsPage(
-      goToNamedRoute: authPage,
+      goToNamedRoute: homePage,
       name: 'Página Inicial',
       leadingData: Icons.home,
     ),

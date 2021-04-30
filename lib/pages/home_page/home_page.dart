@@ -1,3 +1,4 @@
+import 'package:aps_chat/widgets/chat_component/chat_component.dart';
 import 'package:aps_chat/widgets/user_custom_drawer/user_custom_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +7,8 @@ import 'package:flutter/material.dart';
 class HomePage extends StatelessWidget {
   final _users = FirebaseFirestore.instance.collection('users');
   final _loggedUser = FirebaseAuth.instance.currentUser;
+  static List<QueryDocumentSnapshot> allUsers;
+  static QueryDocumentSnapshot loggedUser;
 
   final _tabs = [
     Tab(
@@ -40,8 +43,13 @@ class HomePage extends StatelessWidget {
             }
 
             final QuerySnapshot users = snapshot.data;
+            allUsers = users.docs;
             final allUsersWithoutMe = users.docs
               ..removeWhere((user) => user.id == _loggedUser.uid);
+
+            loggedUser = users.docs
+              .firstWhere((user) => user.id == _loggedUser.uid);
+
 
             if (allUsersWithoutMe.isEmpty) {
               return const Center(
@@ -51,8 +59,8 @@ class HomePage extends StatelessWidget {
 
             return TabBarView(
               children: [
-                const Center(
-                  child: Text('Chat em construção :)'),
+                Center(
+                  child: ChatComponent(),
                 ),
                 Column(
                   children: [
