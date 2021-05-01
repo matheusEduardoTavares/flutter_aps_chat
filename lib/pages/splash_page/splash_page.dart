@@ -13,7 +13,7 @@ class SplashPage extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text(
-            'Aps Chat',
+            'APS Chat',
             style: TextStyle(
               color: Colors.white,
               fontSize: 30.0,

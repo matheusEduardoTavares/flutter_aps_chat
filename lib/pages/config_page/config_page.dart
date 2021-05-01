@@ -1,26 +1,23 @@
-import 'package:aps_chat/providers/configs/configs.dart';
-import 'package:aps_chat/providers/user_provider/user_provider.dart';
+import 'package:aps_chat/providers/theme_config_provider/theme_config_provider.dart';
+import 'package:aps_chat/widgets/global_custom_drawer/global_custom_drawer.dart';
 import 'package:aps_chat/widgets/opacity_request/opacity_request.dart';
+import 'package:aps_chat/widgets/user_custom_drawer/user_custom_drawer.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class ConfigPage extends StatefulWidget {
-  ConfigPage({
-    this.isUserPage = false,
-  });
-
-  final bool isUserPage;
-
   @override
   _ConfigPageState createState() => _ConfigPageState();
 }
 
 class _ConfigPageState extends State<ConfigPage> {
+  final _auth = FirebaseAuth.instance;
   var _isUpdate = false;
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<Configs>(context);
+    final provider = Provider.of<ThemeConfigProvider>(context);
     final brightnessTheme = provider.appBrightness;
     final isDarkTheme = brightnessTheme == Brightness.dark;
 
@@ -29,6 +26,7 @@ class _ConfigPageState extends State<ConfigPage> {
         title: Text('Configurações'),
         centerTitle: true,
       ),
+      drawer: _auth.currentUser != null ? UserCustomDrawer() : GlobalCustomDrawer(),
       body: OpacityRequest(
         isLoading: _isUpdate,
         child: Column(
@@ -45,9 +43,7 @@ class _ConfigPageState extends State<ConfigPage> {
                       _isUpdate = true;
                     });
 
-                    await provider.changeTheme(
-                      Provider.of<UserProvider>(context, listen: false)
-                    );
+                    await provider.changeTheme();
 
                     setState(() {
                       _isUpdate = false;

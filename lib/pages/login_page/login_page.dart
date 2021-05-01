@@ -1,7 +1,8 @@
 import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:aps_chat/utils/textformfields_validator/textformfields_validator.dart';
+import 'package:aps_chat/widgets/global_custom_drawer/global_custom_drawer.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-typedef ValidatorsFunction = String Function(String);
 
 class LoginPage extends StatefulWidget {
 
@@ -10,38 +11,37 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  TextEditingController _nameController;
-
+  TextEditingController _emailController;
   TextEditingController _passwordController;
 
-  final validators = <String, ValidatorsFunction>{
-    'name': (value) {
-      if (value == null || value.isEmpty) {
-        return 'Digite um nome';
-      }
-      else if (value.length < 3) {
-        return 'O nome deve conter pelo menos 4 caracteres';
-      }
+  final _formKey = GlobalKey<FormState>();
+  final _auth = FirebaseAuth.instance;
+  var _showInvisiblePassword = true;
+  var _isLoadingRequest = false;
 
-      return null;
-    },
-    'password': (value) {
-      if (value == null || value.isEmpty) {
-        return 'Digite uma senha';
-      }
-      else if (value.length < 6) {
-        return 'A senha deve conter pelo menos 7 caracteres';
-      }
-
-      return null;
-    },
-  };
+  Future<void> _showErrorDialog(bool isErrorCredentials) => showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: '',
+    pageBuilder: (_, __, ___) => AlertDialog(
+      title: Text('Erro'),
+      content: Text(isErrorCredentials ? 
+        'E-mail e ou senha inválidos' : 'Ocorreu um erro'
+        ', por favor, contate algum administrador'),
+      actions: [
+        TextButton(
+          child: Text('OK'),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+    ),
+  );
 
   @override 
   void initState() {
     super.initState();
 
-    _nameController = TextEditingController();
+    _emailController = TextEditingController();
     _passwordController = TextEditingController();
   }
 
@@ -51,65 +51,112 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         title: const Text('Login'),
       ),
+      drawer: GlobalCustomDrawer(),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
               Container(
+                width: double.infinity,
+                height: 100,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
+                    bottomLeft: Radius.circular(30.0),
                   ),
                   color: Theme.of(context).primaryColor,
                 ),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.person,
                     ),
-                    const SizedBox(height: 10),
-                    const Text('Login'),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
               Form(
-                child: Column(
-                  children: [
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Nome do usuário',
+                key: _formKey,
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(
+                          labelText: 'E-mail',
+                        ),
+                        validator: TextFormFieldsValidator.validators['email'],
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
                       ),
-                      validator: validators['name'],
-                    ),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Senha',
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        obscureText: _showInvisiblePassword,
+                        controller: _passwordController,
+                        decoration: InputDecoration(
+                          labelText: 'Senha',
+                          suffixIcon: IconButton(
+                            icon: Icon(_showInvisiblePassword ? 
+                              Icons.visibility_off : Icons.visibility),
+                            onPressed: () => setState(() => _showInvisiblePassword = !_showInvisiblePassword),
+                            color: Theme.of(context).accentColor,
+                          ),
+                        ),
+                        validator: TextFormFieldsValidator.validators['password'],
+                        textInputAction: TextInputAction.done,
                       ),
-                      validator: validators['password'],
-                    ),
-                    TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Confirmar Senha',
-                      ),
-                      validator: (value) {
-                        if (value != _passwordController.value.text) {
-                          return 'Senhas estão diferentes';
-                        }
-
-                        return null;
-                      },
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                child: const Text('LOGIN'),
-                onPressed: () {
-                  print('clicado');
-                  Navigator.of(context).pushNamed(PagesConfigs.configsPage);
-                },
+              Container(
+                height: 50,
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: ElevatedButton(
+                  child: _isLoadingRequest ? Center(child: CircularProgressIndicator()) : const Text('LOGIN'),
+                  onPressed: () async {
+                    if (_formKey.currentState?.validate() ?? false) {
+                      try {
+                        setState(() {
+                          _isLoadingRequest = true;
+                        });
+                        
+                        await _auth.signInWithEmailAndPassword(
+                          email: _emailController.value.text.trim(), 
+                          password: _passwordController.value.text,
+                        );
+                      }
+                      on FirebaseAuthException catch (_) {
+                        _showErrorDialog(true);
+                      }
+                      catch (_) {
+                        _showErrorDialog(false);
+                      }
+                      finally {
+                        if (mounted) {
+                          setState(() {
+                            _isLoadingRequest = false;
+                          });
+                        }
+                      }
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.8,
+                child: TextButton(
+                  child: const Text('Ainda não possui conta ? Crie uma conta'),
+                  onPressed: () {
+                    print('clicado em criar conta');
+                    GlobalCustomDrawer.changePage(PagesConfigs.signUpPage);
+                    Navigator.of(context).pushReplacementNamed(PagesConfigs.signUpPage);
+                  },
+                ),
               ),
             ],
           ),
@@ -120,7 +167,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override 
   void dispose() {
-    _nameController?.dispose();
+    _emailController?.dispose();
     _passwordController?.dispose();
 
     super.dispose();
