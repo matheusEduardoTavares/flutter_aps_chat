@@ -41,9 +41,9 @@ class _CurrentChatState extends State<CurrentChat> {
         final List<QueryDocumentSnapshot> texts = data?.docs ?? [];
         
         return Scaffold(
-          appBar: AppBar(
+          appBar: MediaQuery.of(context).orientation == Orientation.portrait ? AppBar(
             title: Text(widget.docChatName),
-          ),
+          ) : null,
           body: ChatPage(
             items: texts,
             chatCollection: _chatCollection,

@@ -48,6 +48,13 @@ class _ChatPageState extends State<ChatPage> {
     ),
   );
 
+  Widget _wrapWithDefaultContainer({@required Widget child}) {
+    return Container(
+      height: 44,
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -74,55 +81,59 @@ class _ChatPageState extends State<ChatPage> {
           child: Row(
             children: [
               Expanded(
-                child: TextFormField(
-                  decoration: InputDecoration(
-                    labelText: 'Digite uma mensagem',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                child: _wrapWithDefaultContainer(
+                  child: TextFormField(
+                    decoration: InputDecoration(
+                      labelText: 'Digite uma mensagem',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                      ),
                     ),
+                    controller: _messageController,
+                    textCapitalization: TextCapitalization.sentences,
+                    onChanged: (value) {
+                      setState(() {
+                        _message = value;
+                      });
+                    },
                   ),
-                  controller: _messageController,
-                  textCapitalization: TextCapitalization.sentences,
-                  onChanged: (value) {
-                    setState(() {
-                      _message = value;
-                    });
-                  },
                 ),
               ),
               const SizedBox(width: 10),
-              FloatingActionButton(
-                child: const Icon(
-                  Icons.send,
-                  size: 30,
+              _wrapWithDefaultContainer(
+                child: FloatingActionButton(
+                  child: const Icon(
+                    Icons.send,
+                    size: 30,
+                  ),
+                  backgroundColor: _message.isEmpty ? Colors.grey : null,
+                  onPressed: _message.isEmpty ? null : () async {
+                    try {
+                      widget.chatCollection.add({
+                        'userId': HomePage.loggedUser.id,
+                        'content': _message,
+                        'isImage': false,
+                        'isSystem': false,
+                        'createdAt': Timestamp.now(),
+                      });
+
+                      setState(() {
+                        _message = '';
+                        _messageController.clear();
+                      });
+
+                      Timer(
+                        Duration(milliseconds: 300),
+                        () => _scrollController
+                            .jumpTo(_scrollController.position.minScrollExtent));
+
+                      // _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: Duration(seconds: 2), curve: Curves.fastOutSlowIn);  
+                    }
+                    catch (_) {
+                      _showErrorDialog();
+                    }
+                  },
                 ),
-                backgroundColor: _message.isEmpty ? Colors.grey : null,
-                onPressed: _message.isEmpty ? null : () async {
-                  try {
-                    widget.chatCollection.add({
-                      'userId': HomePage.loggedUser.id,
-                      'content': _message,
-                      'isImage': false,
-                      'isSystem': false,
-                      'createdAt': Timestamp.now(),
-                    });
-
-                    setState(() {
-                      _message = '';
-                      _messageController.clear();
-                    });
-
-                    Timer(
-                      Duration(milliseconds: 300),
-                      () => _scrollController
-                          .jumpTo(_scrollController.position.minScrollExtent));
-
-                    // _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: Duration(seconds: 2), curve: Curves.fastOutSlowIn);  
-                  }
-                  catch (_) {
-                    _showErrorDialog();
-                  }
-                },
               ),
             ],
           ),
