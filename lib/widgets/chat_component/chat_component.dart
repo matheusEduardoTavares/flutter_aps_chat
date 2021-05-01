@@ -1,3 +1,4 @@
+import 'package:aps_chat/pages/home_page/home_page.dart';
 import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -37,19 +38,26 @@ class ChatComponent extends StatelessWidget {
           globalChat.set({
             'name': 'Global',
             'createdAt': Timestamp.now(),
+            'users': [],
           });
         }
+
+        final chatsAssociatedsWithMe = chats?.where(
+          (chat) {
+            final List containedUsers = chat['users'];
+            return containedUsers == null || containedUsers.isEmpty || containedUsers.contains(HomePage.loggedUser.id);
+          }
+        )?.toList() ?? [];
         
         return Column(
           children: [
             Expanded(
               child: ListView.builder(
-                reverse: true,
-                itemCount: chats.length,
+                itemCount: chatsAssociatedsWithMe.length,
                 itemBuilder: (ctx, index) => ListTile(
                   title: Center(
                     child: Text(
-                      'Chat ${chats[index].get("name")}',
+                      '${chatsAssociatedsWithMe[index].get("name")}',
                       textAlign: TextAlign.justify,
                     ),
                   ),
@@ -57,7 +65,8 @@ class ChatComponent extends StatelessWidget {
                     Navigator.of(context).pushNamed(
                       PagesConfigs.chatDataPage,
                       arguments: <String, dynamic>{
-                        'docChatName': '${chats[index].id}',
+                        'docChatName': '${chatsAssociatedsWithMe[index]['name']}',
+                        'docChatStream': '${chatsAssociatedsWithMe[index].id}',
                       },
                     );
                   },

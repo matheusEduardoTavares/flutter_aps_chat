@@ -1,3 +1,4 @@
+import 'package:aps_chat/utils/custom_dialogs/custom_dialogs.dart';
 import 'package:aps_chat/widgets/chat_component/chat_component.dart';
 import 'package:aps_chat/widgets/user_custom_drawer/user_custom_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -72,16 +73,44 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               ),
               Column(
                 children: [
-                  const SizedBox(height: 20),
                   Expanded(
                     child: ListView.builder(
                       itemCount: allUsersWithoutMe.length,
                       itemBuilder: (ctx, index) => ListTile(
                         title: Text('${allUsersWithoutMe[index]["name"]}'),
                         onTap: () async {
+                          final isCreateNewChat = await CustomDialogs.confirmationDialog();
+
+                          if (isCreateNewChat == null || !isCreateNewChat) {
+                            return;
+                          }
+
                           _tabController.animateTo(0);
 
-                          //TODO!: Implementar aqui a adição de novo chat
+                          final loggedUser = HomePage.loggedUser;
+                          final selectedUser = allUsersWithoutMe[index];
+
+                          final newChat = FirebaseFirestore.instance.collection('allChats').doc(
+                            '${loggedUser.id}, ${selectedUser.id}'
+                          );
+
+                          await newChat.set({
+                            'createdAt': Timestamp.now(),
+                            'name': '${selectedUser['name']}',
+                            'users': [
+                              loggedUser.id,
+                              selectedUser.id
+                            ],
+                          });
+
+                          final newCollection = newChat.collection('chat');
+                          newCollection.add({
+                            'createdAt': Timestamp.now(),
+                            'content': 'Esta conversa é apenas entre você e ${selectedUser['name']}',
+                            'isImage': false,
+                            'isSystem': true,
+                            'userId': 'Global',
+                          });
                         },
                       ),
                     ),

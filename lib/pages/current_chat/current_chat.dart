@@ -22,7 +22,7 @@ class _CurrentChatState extends State<CurrentChat> {
   void initState() {
     super.initState();
 
-    _chatCollection = FirebaseFirestore.instance.collection('allChats').doc(widget.docChatName)
+    _chatCollection = FirebaseFirestore.instance.collection('allChats').doc(widget.docChatStream)
       .collection('chat');
   }
 
@@ -39,10 +39,16 @@ class _CurrentChatState extends State<CurrentChat> {
 
         final QuerySnapshot data = snapshot.data ?? [];
         final List<QueryDocumentSnapshot> texts = data?.docs ?? [];
+
+        var finalChatName = widget.docChatName;
+
+        if (finalChatName.contains(',')) {
+          finalChatName = finalChatName.substring(finalChatName.indexOf(','), finalChatName.length);
+        }
         
         return Scaffold(
           appBar: MediaQuery.of(context).orientation == Orientation.portrait ? AppBar(
-            title: Text(widget.docChatName),
+            title: Text(finalChatName),
           ) : null,
           body: ChatPage(
             items: texts,

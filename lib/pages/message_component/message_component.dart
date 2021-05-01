@@ -38,8 +38,8 @@ class MessageComponent extends StatelessWidget {
         elevation: 8,
         child: Column(
           children: [
-            const SizedBox(height: 5),
             Container(
+              width: MediaQuery.of(context).size.width * 0.4,
               height: 10,
               child: FittedBox(
                 child: Text(
