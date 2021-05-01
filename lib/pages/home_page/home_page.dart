@@ -50,13 +50,6 @@ class HomePage extends StatelessWidget {
             loggedUser = (users?.docs ?? [])
               .firstWhere((user) => user.id == _loggedUser.uid, orElse: () => null);
 
-
-            if (allUsersWithoutMe.isEmpty) {
-              return const Center(
-                child: Text('Você ainda não possui usuários cadastrados'),
-              );
-            }
-
             return TabBarView(
               children: [
                 Center(

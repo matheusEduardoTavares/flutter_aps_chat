@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -21,6 +23,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   String _message = '';
   TextEditingController _messageController;
+  final _scrollController = ScrollController();
 
   @override 
   void initState() {
@@ -52,6 +55,8 @@ class _ChatPageState extends State<ChatPage> {
       children: [
         Expanded(
           child: ListView.builder(
+            reverse: true,
+            controller: _scrollController,
             itemCount: widget.items.length,
             itemBuilder: (ctx, index) => MessageComponent(
               content: widget.items[index]['content'],
@@ -92,7 +97,7 @@ class _ChatPageState extends State<ChatPage> {
                   size: 30,
                 ),
                 backgroundColor: _message.isEmpty ? Colors.grey : null,
-                onPressed: _message.isEmpty ? null : () {
+                onPressed: _message.isEmpty ? null : () async {
                   try {
                     widget.chatCollection.add({
                       'userId': HomePage.loggedUser.id,
@@ -106,6 +111,13 @@ class _ChatPageState extends State<ChatPage> {
                       _message = '';
                       _messageController.clear();
                     });
+
+                    Timer(
+                      Duration(milliseconds: 300),
+                      () => _scrollController
+                          .jumpTo(_scrollController.position.minScrollExtent));
+
+                    // _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: Duration(seconds: 2), curve: Curves.fastOutSlowIn);  
                   }
                   catch (_) {
                     _showErrorDialog();

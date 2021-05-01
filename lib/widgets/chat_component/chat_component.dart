@@ -18,12 +18,12 @@ class ChatComponent extends StatelessWidget {
 
         final QuerySnapshot data = snapshot.data;
         
-        final chats = data?.docs ?? [];
+        final chats = data?.docs;
 
-        final verifyIfGlobalChatExists = chats.firstWhere(
+        final verifyIfGlobalChatExists = chats?.firstWhere(
           (chat) => chat.get('name') == 'Global',
           orElse: () => null,
-        );
+        ) ?? null;
 
         if (verifyIfGlobalChatExists == null) {
           final globalChat = allChats.doc('Global');

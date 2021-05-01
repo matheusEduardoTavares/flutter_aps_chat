@@ -29,7 +29,7 @@ class _CurrentChatState extends State<CurrentChat> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: _chatCollection.snapshots(),
+      stream: _chatCollection.orderBy('createdAt', descending: true).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
