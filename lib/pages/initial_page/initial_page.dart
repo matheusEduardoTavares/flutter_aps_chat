@@ -1,3 +1,4 @@
+import 'package:aps_chat/pages/current_chat/current_chat.dart';
 import 'package:aps_chat/providers/theme_config_provider/theme_config_provider.dart';
 import 'package:aps_chat/utils/colors_default/colors_default.dart';
 import 'package:aps_chat/utils/db_util.dart';
@@ -51,6 +52,23 @@ class _InitialPageState extends State<InitialPage> {
           initialRoute: PagesConfigs.splashPage,
           routes: PagesConfigs.pages,
           navigatorKey: NavigatorConfig.navKey,
+          onGenerateRoute: (settings) {
+            if (settings?.name == PagesConfigs.chatDataPage) {
+              final Map<String, dynamic> data = settings?.arguments;
+
+              final docChatName = data['docChatName'];
+              final docChatStream = data['docChatStream'];
+
+              return MaterialPageRoute(
+                builder: (ctx) => CurrentChat(
+                  docChatName: docChatName,
+                  docChatStream: docChatStream,
+                ),
+              );
+            }
+
+            return null;
+          },
           theme: ThemeData(
             iconTheme: IconThemeData(
               color: Colors.white,

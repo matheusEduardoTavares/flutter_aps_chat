@@ -43,12 +43,12 @@ class HomePage extends StatelessWidget {
             }
 
             final QuerySnapshot users = snapshot.data;
-            allUsers = users.docs;
-            final allUsersWithoutMe = users.docs
+            allUsers = users?.docs ?? [];
+            final allUsersWithoutMe = (users?.docs ?? [])
               ..removeWhere((user) => user.id == _loggedUser.uid);
 
-            loggedUser = users.docs
-              .firstWhere((user) => user.id == _loggedUser.uid);
+            loggedUser = (users?.docs ?? [])
+              .firstWhere((user) => user.id == _loggedUser.uid, orElse: () => null);
 
 
             if (allUsersWithoutMe.isEmpty) {
