@@ -41,10 +41,6 @@ class _ChatLoadingStreamState extends State<ChatLoadingStream> {
         final List<QueryDocumentSnapshot> texts = data?.docs ?? [];
 
         var finalChatName = widget.docChatName;
-
-        if (finalChatName.contains(',')) {
-          finalChatName = finalChatName.substring(finalChatName.indexOf(','), finalChatName.length);
-        }
         
         return Scaffold(
           appBar: MediaQuery.of(context).orientation == Orientation.portrait ? AppBar(

@@ -20,7 +20,7 @@ class ChatsList extends StatelessWidget {
     }
 
     users.removeWhere((userId) => userId == HomePage.loggedUser.id);
-    String message;
+    String message = '';
     for (final us in users) {
       final internalUser = listUsers.firstWhere((usFunction) => usFunction.id == us);
       message += '${internalUser["name"]}, ';

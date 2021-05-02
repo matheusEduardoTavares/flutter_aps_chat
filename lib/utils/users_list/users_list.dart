@@ -18,6 +18,7 @@ class UsersList extends StatefulWidget {
 
 class _UsersListState extends State<UsersList> {
   final _usersSelected = <QueryDocumentSnapshot>[];
+  var _isLoadingCreateGroup = false;
 
   Future<void> _showErrorDialog({
     @required BuildContext context,
@@ -88,7 +89,7 @@ class _UsersListState extends State<UsersList> {
             'Clique no usuário para criar um chat individual e clique'
             ' em sua imagem / ícone ou fique pressionando no usuário desejado '
             'para adicioná-lo à lista e permitir a '
-            'criação de um grupo'
+            'criação de um grupo (precisa selecionar pelo menos 2 usuários)'
           ),
         ),
         Expanded(
@@ -173,13 +174,84 @@ class _UsersListState extends State<UsersList> {
           ),
         ),
         const SizedBox(height: 10),
-        if (_usersSelected.isNotEmpty)
-          ElevatedButton(
-            child: const Text('Criar grupo'),
-            onPressed: () {
-              print('clicado');
-            },
+        if (_usersSelected.length >= 2)
+          Container(
+            height: 50,
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: ElevatedButton(
+              child: _isLoadingCreateGroup ? Center(
+                child: CircularProgressIndicator(),
+              ) : const Text('Criar grupo'),
+              onPressed: () async {
+                String usersName = '';
+                String usersId = '';
+                for (final currentUser in _usersSelected) {
+                  usersName += '${currentUser["name"]}, ';
+                  usersId += '${currentUser.id}, ';
+                }
+
+                usersName = usersName.substring(0, usersName.lastIndexOf(','));
+                usersId = usersId.substring(0, usersId.lastIndexOf(','));
+
+                final isCreateNewChat = await CustomDialogs.confirmationDialog(
+                  content: Text(
+                    'Você confirma a criação de um grupo com os '
+                    'usuários $usersName ?'
+                  )
+                );
+
+                if (isCreateNewChat == null || !isCreateNewChat) {
+                  return;
+                }
+
+                
+
+                final loggedUser = HomePage.loggedUser;
+
+                final groupName = await CustomDialogs.textChooseDialog();
+
+                if (groupName == null) {
+                  return;
+                }
+
+                setState(() {
+                  _isLoadingCreateGroup = true;
+                });
+
+                final newChat = FirebaseFirestore.instance.collection('allChats').doc(
+                  '${loggedUser.id}, $usersId'
+                );
+
+                await newChat.set({
+                  'createdAt': Timestamp.now(),
+                  'name': groupName,
+                  'users': [
+                    loggedUser.id,
+                    ..._usersSelected.map((usSelected) => usSelected.id).toList(),
+                  ],
+                });
+
+                final newCollection = newChat.collection('chat');
+                newCollection.add({
+                  'createdAt': Timestamp.now(),
+                  'content': 'Esta conversa é apenas entre /${HomePage.loggedUser.id}/, '
+                    '${_usersSelected.map((usSelected) => "/${usSelected.id}/").toList().join(", ")}',
+                  'isImage': false,
+                  'isSystem': true,
+                  'userId': 'Global',
+                  'createdBy': loggedUser.id,
+                });
+
+                setState(() {
+                  _isLoadingCreateGroup = false;
+                });
+
+                widget.tabController.animateTo(0);
+              },
+            ),
           ),
+        if (_usersSelected.length >= 2)
+          const SizedBox(height: 10),
       ],
     );
   }

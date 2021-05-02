@@ -36,9 +36,7 @@ class _MessageComponentState extends State<MessageComponent> {
     if (!notification.contains('/') || widget.createdBy == null) {
       return notification;
     }
-    else if (widget.createdBy != null && widget.createdBy != HomePage.loggedUser.id) {
-      return 'Esta conversa é entre você e ${UserUtilities.getUserById(widget.createdBy)['name']}';
-    }
+
     String finalMessage = '';
     final messageInArray = notification.split('/');
     for (final currentMessage in messageInArray) {
