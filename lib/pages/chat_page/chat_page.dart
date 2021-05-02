@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:aps_chat/utils/check_internet_connection/check_internet_connection.dart';
 import 'package:aps_chat/utils/custom_dialogs/custom_dialogs.dart';
+import 'package:aps_chat/widgets/message_component/message_component.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'package:aps_chat/pages/home_page/home_page.dart';
-import 'package:aps_chat/pages/message_component/message_component.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({

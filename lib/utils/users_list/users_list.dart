@@ -3,8 +3,8 @@ import 'package:aps_chat/utils/custom_dialogs/custom_dialogs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class UsersWidgets extends StatefulWidget {
-  const UsersWidgets({
+class UsersList extends StatefulWidget {
+  const UsersList({
     @required this.allChatsWithMe,
     @required this.tabController,
   });
@@ -13,10 +13,10 @@ class UsersWidgets extends StatefulWidget {
   final TabController tabController;
 
   @override
-  _UsersWidgetsState createState() => _UsersWidgetsState();
+  _UsersListState createState() => _UsersListState();
 }
 
-class _UsersWidgetsState extends State<UsersWidgets> {
+class _UsersListState extends State<UsersList> {
   final _usersSelected = <QueryDocumentSnapshot>[];
 
   Future<void> _showErrorDialog({

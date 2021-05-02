@@ -1,5 +1,5 @@
 import 'package:aps_chat/utils/check_internet_connection/check_internet_connection.dart';
-import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:aps_chat/utils/textformfields_validator/textformfields_validator.dart';
 import 'package:aps_chat/widgets/global_custom_drawer/global_custom_drawer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -171,8 +171,8 @@ class _LoginPageState extends State<LoginPage> {
                   child: const Text('Ainda não possui conta ? Crie uma conta'),
                   onPressed: () {
                     print('clicado em criar conta');
-                    GlobalCustomDrawer.changePage(PagesConfigs.signUpPage);
-                    Navigator.of(context).pushReplacementNamed(PagesConfigs.signUpPage);
+                    GlobalCustomDrawer.changePage(DetailsPages.signUpPage);
+                    Navigator.of(context).pushReplacementNamed(DetailsPages.signUpPage);
                   },
                 ),
               ),

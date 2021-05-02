@@ -1,9 +1,9 @@
 import 'package:aps_chat/pages/home_page/home_page.dart';
-import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class ChatComponent extends StatelessWidget {
+class ChatsList extends StatelessWidget {
   final allChats = FirebaseFirestore.instance.collection('allChats');
 
   String _getOtherUserName(QueryDocumentSnapshot user) {
@@ -100,7 +100,7 @@ class ChatComponent extends StatelessWidget {
                       ),
                       onTap: () {
                         Navigator.of(context).pushNamed(
-                          PagesConfigs.chatDataPage,
+                          DetailsPages.chatDataPage,
                           arguments: <String, dynamic>{
                             'docChatName': _getOtherUserName(chatsAssociatedsWithMe[index]),
                             'docChatStream': '${chatsAssociatedsWithMe[index].id}',

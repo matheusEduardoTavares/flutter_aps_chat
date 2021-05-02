@@ -1,5 +1,5 @@
 import 'package:aps_chat/utils/check_internet_connection/check_internet_connection.dart';
-import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:aps_chat/utils/textformfields_validator/textformfields_validator.dart';
 import 'package:aps_chat/widgets/global_custom_drawer/global_custom_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -221,7 +221,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           await _showSuccessDialog();
 
                           Navigator.of(context)
-                            .pushReplacementNamed(PagesConfigs.homePage);
+                            .pushReplacementNamed(DetailsPages.homePage);
                         }
                         catch (e) {
                           if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
@@ -250,8 +250,8 @@ class _SignUpPageState extends State<SignUpPage> {
                   child: const Text('Já possui conta ? Faça o login'),
                   onPressed: () {
                     print('clicado em fazer login');
-                    GlobalCustomDrawer.changePage(PagesConfigs.loginPage);
-                    Navigator.of(context).pushReplacementNamed(PagesConfigs.loginPage);
+                    GlobalCustomDrawer.changePage(DetailsPages.loginPage);
+                    Navigator.of(context).pushReplacementNamed(DetailsPages.loginPage);
                   },
                 ),
               ),

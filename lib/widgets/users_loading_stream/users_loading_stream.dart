@@ -1,10 +1,10 @@
 import 'package:aps_chat/pages/home_page/home_page.dart';
-import 'package:aps_chat/utils/users_widget/users_widgets.dart';
+import 'package:aps_chat/utils/users_list/users_list.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class UsersListComponent extends StatelessWidget {
-  const UsersListComponent({
+class UsersLoadingStream extends StatelessWidget {
+  const UsersLoadingStream({
     this.tabController,
   });
 
@@ -31,7 +31,7 @@ class UsersListComponent extends StatelessWidget {
           return listUsersIntoChat.contains(HomePage.loggedUser.id);
         })?.toList() ?? [];
 
-        return UsersWidgets(
+        return UsersList(
           allChatsWithMe: allChatsWithMe,
           tabController: tabController,
         );

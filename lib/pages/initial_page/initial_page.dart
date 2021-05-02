@@ -1,10 +1,10 @@
-import 'package:aps_chat/pages/current_chat/current_chat.dart';
+import 'package:aps_chat/pages/chat_loading_stream/chat_loading_stream.dart';
 import 'package:aps_chat/pages/image_page/image_page.dart';
 import 'package:aps_chat/providers/theme_config_provider/theme_config_provider.dart';
 import 'package:aps_chat/utils/colors_default/colors_default.dart';
 import 'package:aps_chat/utils/db_util.dart';
 import 'package:aps_chat/utils/navigator_config.dart';
-import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +32,7 @@ class _InitialPageState extends State<InitialPage> {
 
         Firebase.initializeApp().then((_) {
           Navigator.of(ctx)
-            .pushReplacementNamed(PagesConfigs.authPage);
+            .pushReplacementNamed(DetailsPages.authPage);
         });
       });
     });
@@ -51,24 +51,24 @@ class _InitialPageState extends State<InitialPage> {
         final brightness = Provider.of<ThemeConfigProvider>(ctx).appBrightness;
         return MaterialApp(
           title: 'ProjectComplete',
-          initialRoute: PagesConfigs.splashPage,
-          routes: PagesConfigs.pages,
+          initialRoute: DetailsPages.splashPage,
+          routes: DetailsPages.pages,
           navigatorKey: NavigatorConfig.navKey,
           onGenerateRoute: (settings) {
-            if (settings?.name == PagesConfigs.chatDataPage) {
+            if (settings?.name == DetailsPages.chatDataPage) {
               final Map<String, dynamic> data = settings?.arguments;
 
               final docChatName = data['docChatName'];
               final docChatStream = data['docChatStream'];
 
               return MaterialPageRoute(
-                builder: (ctx) => CurrentChat(
+                builder: (ctx) => ChatLoadingStream(
                   docChatName: docChatName,
                   docChatStream: docChatStream,
                 ),
               );
             }
-            else if (settings?.name == PagesConfigs.imagePage) {
+            else if (settings?.name == DetailsPages.imagePage) {
               final Map<String, dynamic> data = settings?.arguments;
 
               final QueryDocumentSnapshot user = data['user'];

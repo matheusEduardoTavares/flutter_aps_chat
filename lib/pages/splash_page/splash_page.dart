@@ -1,4 +1,4 @@
-import 'package:aps_chat/utils/get_images/get_images.dart';
+import 'package:aps_chat/utils/asset_images/asset_images.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -21,7 +21,7 @@ class SplashPage extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Image.asset(
-            GetImages.chatImage,
+            AssetImages.chatImage,
             fit: BoxFit.cover,
           ),
           const SizedBox(height: 20),

@@ -2,8 +2,8 @@ import 'package:aps_chat/pages/chat_page/chat_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class CurrentChat extends StatefulWidget {
-  const CurrentChat({
+class ChatLoadingStream extends StatefulWidget {
+  const ChatLoadingStream({
     @required this.docChatName,
     this.docChatStream,
   });
@@ -12,10 +12,10 @@ class CurrentChat extends StatefulWidget {
   final String docChatStream;
 
   @override
-  _CurrentChatState createState() => _CurrentChatState();
+  _ChatLoadingStreamState createState() => _ChatLoadingStreamState();
 }
 
-class _CurrentChatState extends State<CurrentChat> {
+class _ChatLoadingStreamState extends State<ChatLoadingStream> {
   CollectionReference _chatCollection;
 
   @override 

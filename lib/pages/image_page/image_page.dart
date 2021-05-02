@@ -3,23 +3,27 @@ import 'package:flutter/material.dart';
 
 class ImagePage extends StatelessWidget {
   const ImagePage({
-    @required this.user,
+    this.user,
+    this.nameAppBar,
+    this.url,
   });
 
   final QueryDocumentSnapshot user;
+  final String nameAppBar;
+  final String url;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Imagem do ${user['name']}'),
+        title: Text('Imagem do ${nameAppBar ?? user['name']}'),
       ),
       body: PageView(
         children: [
           Row(
             children: [
               Image.network(
-                user['imageUrl'],
+                url ?? user['imageUrl'],
                 height: MediaQuery.of(context).size.height,
                 width: MediaQuery.of(context).size.width,
                 fit: BoxFit.cover,

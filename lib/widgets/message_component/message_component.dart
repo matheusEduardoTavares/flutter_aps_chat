@@ -1,5 +1,5 @@
 import 'package:aps_chat/pages/home_page/home_page.dart';
-import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:aps_chat/utils/users_utilities/user_utilities.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -131,7 +131,7 @@ class _MessageComponentState extends State<MessageComponent> {
               child: _getImage(UserUtilities.getUserById(widget.userId)),
               onTap: _userHasImage ? () {
                 Navigator.of(context).pushNamed(
-                  PagesConfigs.imagePage,
+                  DetailsPages.imagePage,
                   arguments: <String, dynamic> {
                     'user': UserUtilities.getUserById(widget.userId),
                   }

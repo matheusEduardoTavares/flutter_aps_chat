@@ -1,6 +1,6 @@
-import 'package:aps_chat/widgets/chat_component/chat_component.dart';
+import 'package:aps_chat/widgets/chats_list/chats_list.dart';
 import 'package:aps_chat/widgets/user_custom_drawer/user_custom_drawer.dart';
-import 'package:aps_chat/widgets/users_list_component/users_list_component.dart';
+import 'package:aps_chat/widgets/users_loading_stream/users_loading_stream.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -71,9 +71,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             controller: _tabController,
             children: [
               Center(
-                child: ChatComponent(),
+                child: ChatsList(),
               ),
-              UsersListComponent(
+              UsersLoadingStream(
                 tabController: _tabController,
               ),
             ],

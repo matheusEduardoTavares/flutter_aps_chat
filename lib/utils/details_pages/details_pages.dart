@@ -1,5 +1,5 @@
 import 'package:aps_chat/models/details_page.dart';
-import 'package:aps_chat/pages/auth_page.dart';
+import 'package:aps_chat/pages/auth_page/auth_page.dart';
 import 'package:aps_chat/pages/config_page/config_page.dart';
 import 'package:aps_chat/pages/home_page/home_page.dart';
 import 'package:aps_chat/pages/login_page/login_page.dart';
@@ -8,7 +8,7 @@ import 'package:aps_chat/pages/splash_page/splash_page.dart';
 import 'package:aps_chat/pages/user_data/user_data.dart';
 import 'package:flutter/material.dart';
 
-abstract class PagesConfigs {
+abstract class DetailsPages {
   static const loginPage = '/loginPage';
   static const splashPage = '/splashPage';
   static const configsPage = '/configsPage';
