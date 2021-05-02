@@ -1,4 +1,5 @@
 import 'package:aps_chat/pages/home_page/home_page.dart';
+import 'package:aps_chat/utils/check_internet_connection/check_internet_connection.dart';
 import 'package:aps_chat/utils/custom_dialogs/custom_dialogs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -78,6 +79,22 @@ class _UsersListState extends State<UsersList> {
       });
     }    
   }
+
+  Future<void> _showNetworkError({String message, String title}) => showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: '',
+    pageBuilder: (_, __, ___) => AlertDialog(
+      title: Text(title ?? 'Sem conexão'),
+      content: Text(message ?? 'Você está sem internet e por isso não conseguirá criar o grupo'),
+      actions: [
+        TextButton(
+          child: Text('OK'),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -185,6 +202,14 @@ class _UsersListState extends State<UsersList> {
                 child: CircularProgressIndicator(),
               ) : const Text('Criar grupo'),
               onPressed: _isLoadingCreateGroup ? () {} : () async {
+                final hasInternet = await CheckInternetConnection.
+                  hasInternetConnection();
+
+                if (!hasInternet) {
+                  _showNetworkError();
+                  return;
+                }
+
                 String usersName = '';
                 String usersId = '';
                 for (final currentUser in _usersSelected) {
@@ -205,8 +230,6 @@ class _UsersListState extends State<UsersList> {
                 if (isCreateNewChat == null || !isCreateNewChat) {
                   return;
                 }
-
-                
 
                 final loggedUser = HomePage.loggedUser;
 

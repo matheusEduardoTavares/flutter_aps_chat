@@ -6,7 +6,7 @@ abstract class TextFormFieldsValidator {
       if (value == null || value.isEmpty) {
         return 'Digite um nome';
       }
-      else if (value.trim().length < 3) {
+      else if (value.trim().length < 4) {
         return 'O nome deve conter pelo menos 4 caracteres';
       }
 
