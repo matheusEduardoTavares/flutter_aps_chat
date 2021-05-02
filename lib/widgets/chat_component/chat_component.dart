@@ -6,6 +6,29 @@ import 'package:flutter/material.dart';
 class ChatComponent extends StatelessWidget {
   final allChats = FirebaseFirestore.instance.collection('allChats');
 
+  String _getOtherUserName(QueryDocumentSnapshot user) {
+    List<String> users = user.id.split(', ');
+    final listUsers = List<QueryDocumentSnapshot>.from(HomePage.allUsersWithoutMe);
+    if (users == null || users.isEmpty || users.first == 'Global') {
+      return user['name'];
+    }
+
+    else if (users.length == 2) {
+      users.removeWhere((userId) => userId == HomePage.loggedUser.id);
+      final user = listUsers.firstWhere((us) => us.id == users.first);
+      return user['name'];
+    }
+
+    users.removeWhere((userId) => userId == HomePage.loggedUser.id);
+    String message;
+    for (final us in users) {
+      final internalUser = listUsers.firstWhere((usFunction) => usFunction.id == us);
+      message += '${internalUser["name"]}, ';
+    }
+    final allUsersOnGroup = message.substring(0, message.length - 2);
+    return allUsersOnGroup;
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -34,6 +57,7 @@ class ChatComponent extends StatelessWidget {
             'isImage': false,
             'isSystem': true,
             'createdAt': Timestamp.now(),
+            'createdBy': 'Global',
           });
           globalChat.set({
             'name': 'Global',
@@ -57,7 +81,7 @@ class ChatComponent extends StatelessWidget {
                 itemBuilder: (ctx, index) => ListTile(
                   title: Center(
                     child: Text(
-                      '${chatsAssociatedsWithMe[index].get("name")}',
+                      '${_getOtherUserName(chatsAssociatedsWithMe[index])}',
                       textAlign: TextAlign.justify,
                     ),
                   ),
@@ -65,7 +89,7 @@ class ChatComponent extends StatelessWidget {
                     Navigator.of(context).pushNamed(
                       PagesConfigs.chatDataPage,
                       arguments: <String, dynamic>{
-                        'docChatName': '${chatsAssociatedsWithMe[index]['name']}',
+                        'docChatName': _getOtherUserName(chatsAssociatedsWithMe[index]),
                         'docChatStream': '${chatsAssociatedsWithMe[index].id}',
                       },
                     );

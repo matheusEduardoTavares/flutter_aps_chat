@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
   static List<QueryDocumentSnapshot> allUsers;
+  static List<QueryDocumentSnapshot> allUsersWithoutMe;
   static QueryDocumentSnapshot loggedUser;
 
   @override
@@ -59,7 +60,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
           final QuerySnapshot users = snapshot.data;
           HomePage.allUsers = users?.docs ?? [];
-          final allUsersWithoutMe = (users?.docs ?? [])
+          final usersOtherMemoryAddress = List<QueryDocumentSnapshot>.from(HomePage.allUsers);
+          HomePage.allUsersWithoutMe = (usersOtherMemoryAddress ?? [])
             ..removeWhere((user) => user.id == _loggedUser.uid);
 
           HomePage.loggedUser = (users?.docs ?? [])
@@ -75,9 +77,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 children: [
                   Expanded(
                     child: ListView.builder(
-                      itemCount: allUsersWithoutMe.length,
+                      itemCount: HomePage.allUsersWithoutMe.length,
                       itemBuilder: (ctx, index) => ListTile(
-                        title: Text('${allUsersWithoutMe[index]["name"]}'),
+                        title: Text('${HomePage.allUsersWithoutMe[index]["name"]}'),
                         onTap: () async {
                           final isCreateNewChat = await CustomDialogs.confirmationDialog();
 
@@ -88,7 +90,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           _tabController.animateTo(0);
 
                           final loggedUser = HomePage.loggedUser;
-                          final selectedUser = allUsersWithoutMe[index];
+                          final selectedUser = HomePage.allUsersWithoutMe[index];
 
                           final newChat = FirebaseFirestore.instance.collection('allChats').doc(
                             '${loggedUser.id}, ${selectedUser.id}'
@@ -106,10 +108,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           final newCollection = newChat.collection('chat');
                           newCollection.add({
                             'createdAt': Timestamp.now(),
-                            'content': 'Esta conversa é apenas entre você e ${selectedUser['name']}',
+                            'content': 'Esta conversa é apenas entre você e /${selectedUser.id}/',
                             'isImage': false,
                             'isSystem': true,
                             'userId': 'Global',
+                            'createdBy': loggedUser.id,
                           });
                         },
                       ),

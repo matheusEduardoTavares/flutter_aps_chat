@@ -64,6 +64,7 @@ class _ChatPageState extends State<ChatPage> {
               isImage: widget.items[index]['isImage'],
               isSystem: widget.items[index]['isSystem'],
               createdAt: widget.items[index]['createdAt'],
+              createdBy: widget.items[index]['createdBy'],
             ),
           ),
         ),
@@ -104,6 +105,7 @@ class _ChatPageState extends State<ChatPage> {
                       'isImage': false,
                       'isSystem': false,
                       'createdAt': Timestamp.now(),
+                      'createdBy': HomePage.loggedUser.id,
                     });
 
                     setState(() {

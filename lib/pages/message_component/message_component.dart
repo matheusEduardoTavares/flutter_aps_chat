@@ -1,4 +1,5 @@
 import 'package:aps_chat/pages/home_page/home_page.dart';
+import 'package:aps_chat/utils/users_utilities/user_utilities.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +13,7 @@ class MessageComponent extends StatelessWidget {
     @required this.createdAt,
     @required this.userId,
     this.isSystem = false,
+    this.createdBy,
   }) : super(key: key);
 
   final String content;
@@ -20,6 +22,29 @@ class MessageComponent extends StatelessWidget {
   final bool isSystem;
   final Timestamp createdAt;
   final String userId;
+  final String createdBy;
+
+  String _getMessageUser(String notification) {
+    if (!notification.contains('/') || createdBy == null) {
+      return notification;
+    }
+    else if (createdBy != null && createdBy != HomePage.loggedUser.id) {
+      return 'Esta conversa é entre você e ${UserUtilities.getUserById(createdBy)['name']}';
+    }
+    String finalMessage = '';
+    final messageInArray = notification.split('/');
+    for (final currentMessage in messageInArray) {
+      final user = UserUtilities.getUserById(currentMessage);
+      if (user == null) {
+        finalMessage += currentMessage;
+      }
+      else {
+        finalMessage += user['name'];
+      }
+    }
+
+    return finalMessage;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +77,7 @@ class MessageComponent extends StatelessWidget {
               width: MediaQuery.of(context).size.width * (isSystem ? 1.0 : 0.5),
               padding: const EdgeInsets.all(15),
               child: isImage ? Text('imagem') : Text(
-                content, 
+                !isSystem ? content : _getMessageUser(content), 
                 style: TextStyle(
                   color: Colors.white,
                 ),
