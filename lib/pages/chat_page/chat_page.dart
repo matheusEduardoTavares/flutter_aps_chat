@@ -99,8 +99,8 @@ class _ChatPageState extends State<ChatPage> {
                   Icons.send,
                   size: 30,
                 ),
-                backgroundColor: _message.isEmpty ? Colors.grey : null,
-                onPressed: _message.isEmpty ? null : () async {
+                backgroundColor: _message?.trim()?.isEmpty ?? true ? Colors.grey : null,
+                onPressed: _message?.trim()?.isEmpty ?? true ? null : () async {
                   bool hasFilterMessage = false;
                   try {
                     if (_message.length > 1200) {

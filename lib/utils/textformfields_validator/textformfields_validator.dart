@@ -17,7 +17,7 @@ abstract class TextFormFieldsValidator {
         return 'Digite uma senha';
       }
       else if (value.length < 6) {
-        return 'A senha deve conter pelo menos 7 caracteres';
+        return 'A senha deve conter pelo menos 6 caracteres';
       }
 
       return null;

@@ -85,14 +85,14 @@ class ChatsList extends StatelessWidget {
                     child: ListTile(
                       title: Text(
                         '${_getOtherUserName(chatsAssociatedsWithMe[index])}',
-                        textAlign: TextAlign.end,
+                        textAlign: TextAlign.center,
                       ),
-                      leading: Column(
+                      subtitle: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             usersOnChat.isEmpty ? 'Todos usuários' : (
-                              usersOnChat.length == 2 ? 'Privado' : 'Grupo'
+                              usersOnChat.length == 2 ? 'Privado' : '${chatsAssociatedsWithMe[index]["name"]}'
                             ),
                             style: TextStyle(color: Theme.of(context).accentColor),
                           ),

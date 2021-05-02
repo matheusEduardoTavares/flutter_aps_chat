@@ -83,15 +83,16 @@ class _UsersListState extends State<UsersList> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Text(
-            'Clique no usuário para criar um chat individual e clique'
-            ' em sua imagem / ícone ou fique pressionando no usuário desejado '
-            'para adicioná-lo à lista e permitir a '
-            'criação de um grupo (precisa selecionar pelo menos 2 usuários)'
+        if (HomePage.allUsersWithoutMe.length <= 2)
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Text(
+              'Clique no usuário para criar um chat individual e clique'
+              ' em sua imagem / ícone ou fique pressionando no usuário desejado '
+              'para adicioná-lo à lista e permitir a '
+              'criação de um grupo (precisa selecionar pelo menos 2 usuários)'
+            ),
           ),
-        ),
         Expanded(
           child: HomePage.allUsersWithoutMe.isEmpty ? Center(
             child: const Text('Não há nenhum outro usuário além de você'),
@@ -183,7 +184,7 @@ class _UsersListState extends State<UsersList> {
               child: _isLoadingCreateGroup ? Center(
                 child: CircularProgressIndicator(),
               ) : const Text('Criar grupo'),
-              onPressed: () async {
+              onPressed: _isLoadingCreateGroup ? () {} : () async {
                 String usersName = '';
                 String usersId = '';
                 for (final currentUser in _usersSelected) {

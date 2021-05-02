@@ -17,6 +17,10 @@ class _ConfigPageState extends State<ConfigPage> {
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic> mapArguments = ModalRoute.of(context)?.settings?.arguments ?? {};
+    final bool isUseDrawer = mapArguments.containsKey('isUseDrawer') && 
+      mapArguments['isUseDrawer'] != null ? mapArguments['isUseDrawer'] : true;
+
     final provider = Provider.of<ThemeConfigProvider>(context);
     final brightnessTheme = provider.appBrightness;
     final isDarkTheme = brightnessTheme == Brightness.dark;
@@ -26,7 +30,7 @@ class _ConfigPageState extends State<ConfigPage> {
         title: Text('Configurações'),
         centerTitle: true,
       ),
-      drawer: _auth.currentUser != null ? UserCustomDrawer() : GlobalCustomDrawer(),
+      drawer: isUseDrawer ? (_auth.currentUser != null ? UserCustomDrawer() : GlobalCustomDrawer()) : null,
       body: OpacityRequest(
         isLoading: _isUpdate,
         child: Column(

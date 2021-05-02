@@ -57,11 +57,13 @@ abstract class DetailsPages {
       goToNamedRoute: userDataPage,
       name: 'Dados',
       leadingData: Icons.data_usage,
+      isPushReplacement: false,
     ),
     DetailsPage(
       goToNamedRoute: configsPage,
       name: 'Configurações',
       leadingData: Icons.settings,
+      isPushReplacement: false,
     ),
   ];
 }

@@ -74,9 +74,22 @@ class _UserCustomDrawerState extends State<UserCustomDrawer> {
                       ),
                       onTap: () {
                         UserCustomDrawer.changePage(pagesItems[index].goToNamedRoute);
-                        Navigator.of(context).pushReplacementNamed(
-                          pagesItems[index].goToNamedRoute,
-                        );
+
+                        if (pagesItems[index].isPushReplacement ?? true) {
+                          Navigator.of(context).pushReplacementNamed(
+                            pagesItems[index].goToNamedRoute,
+                          );
+                        }
+                        else {
+                          Navigator.of(context).pushNamed(
+                            pagesItems[index].goToNamedRoute,
+                            arguments: pagesItems[index].goToNamedRoute == DetailsPages.configsPage ?
+                              {'isUseDrawer': false,} : null, 
+                          ).then((_) {
+                            UserCustomDrawer.changePage(DetailsPages.homePage);
+                            Navigator.of(context).pop();
+                          });
+                        }
                       },
                     ),
                   ),

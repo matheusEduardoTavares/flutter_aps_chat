@@ -51,6 +51,7 @@ abstract class CustomDialogs {
                 decoration: InputDecoration(
                   labelText: 'Nome do grupo',
                   border: OutlineInputBorder(),
+                  errorStyle: TextStyle(color: Colors.red, fontSize: 10)
                 ),
                 validator: (value) {
                   if (value == null || value.length < 4) {

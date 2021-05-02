@@ -11,6 +11,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UserData extends StatefulWidget {
+  const UserData({
+    this.isUseDrawer = false,
+  });
+
+  final bool isUseDrawer;
+
   @override
   _UserDataState createState() => _UserDataState();
 }
@@ -109,7 +115,7 @@ class _UserDataState extends State<UserData> {
       appBar: AppBar(
         title: const Text('Atualizar dados'),
       ),
-      drawer: UserCustomDrawer(),
+      drawer: widget.isUseDrawer ? UserCustomDrawer() : null,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Form(
