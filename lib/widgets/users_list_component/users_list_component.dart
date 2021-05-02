@@ -31,6 +31,29 @@ class UsersListComponent extends StatelessWidget {
     ),
   );
 
+  Widget _getLeading(QueryDocumentSnapshot us) {
+    final _defaultIcon = const Icon(
+      Icons.person_outline,
+      size: 25.0,
+    );
+
+    try {
+      final imageUrl = us['imageUrl'];
+
+      return CircleAvatar(
+        backgroundImage: NetworkImage(
+          imageUrl,
+        ),
+      );
+    }
+    catch (_) {
+      print('aqui tem erro');
+      return CircleAvatar(
+        child: Center(child: _defaultIcon),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
@@ -59,54 +82,61 @@ class UsersListComponent extends StatelessWidget {
                 child: const Text('Não há nenhum outro usuário além de você'),
               ) : ListView.builder(
                 itemCount: HomePage.allUsersWithoutMe.length,
-                itemBuilder: (ctx, index) => InkWell(
-                  onLongPress: () {
-                    print('onLongPress');
-                  },
-                  onTap: () {
-                    _showErrorDialog(
-                      context: context,
-                    );
-                  },
-                  child: ListTile(
-                    title: Text('${HomePage.allUsersWithoutMe[index]["name"]}'),
-                    enabled: allChatsWithMe.where((currentChat) => currentChat['users'].
-                      contains(HomePage.allUsersWithoutMe[index].id)).toList().isEmpty,
-                    onTap: () async {
-                      final isCreateNewChat = await CustomDialogs.confirmationDialog();
-
-                      if (isCreateNewChat == null || !isCreateNewChat) {
-                        return;
-                      }
-
-                      tabController.animateTo(0);
-
-                      final loggedUser = HomePage.loggedUser;
-                      final selectedUser = HomePage.allUsersWithoutMe[index];
-
-                      final newChat = FirebaseFirestore.instance.collection('allChats').doc(
-                        '${loggedUser.id}, ${selectedUser.id}'
-                      );
-
-                      await newChat.set({
-                        'createdAt': Timestamp.now(),
-                        'name': '${selectedUser['name']}',
-                        'users': [
-                          loggedUser.id,
-                          selectedUser.id
-                        ],
-                      });
-
-                      final newCollection = newChat.collection('chat');
-                      newCollection.add({
-                        'createdAt': Timestamp.now(),
-                        'content': 'Esta conversa é apenas entre você e /${selectedUser.id}/',
-                        'isImage': false,
-                        'isSystem': true,
-                        'userId': 'Global',
-                        'createdBy': loggedUser.id,
-                      });
+                itemBuilder: (ctx, index) => Card(
+                  elevation: 5,
+                  child: InkWell(
+                    onLongPress: () {
+                      print('onLongPress');
                     },
+                    onTap: () {
+                      _showErrorDialog(
+                        context: context,
+                      );
+                    },
+                    child: ListTile(
+                      leading: _getLeading(HomePage.allUsersWithoutMe[index]),
+                      title: Text(
+                        '${HomePage.allUsersWithoutMe[index]["name"]}',
+                        textAlign: TextAlign.end,
+                      ),
+                      enabled: allChatsWithMe.where((currentChat) => currentChat['users'].
+                        contains(HomePage.allUsersWithoutMe[index].id)).toList().isEmpty,
+                      onTap: () async {
+                        final isCreateNewChat = await CustomDialogs.confirmationDialog();
+
+                        if (isCreateNewChat == null || !isCreateNewChat) {
+                          return;
+                        }
+
+                        tabController.animateTo(0);
+
+                        final loggedUser = HomePage.loggedUser;
+                        final selectedUser = HomePage.allUsersWithoutMe[index];
+
+                        final newChat = FirebaseFirestore.instance.collection('allChats').doc(
+                          '${loggedUser.id}, ${selectedUser.id}'
+                        );
+
+                        await newChat.set({
+                          'createdAt': Timestamp.now(),
+                          'name': '${selectedUser['name']}',
+                          'users': [
+                            loggedUser.id,
+                            selectedUser.id
+                          ],
+                        });
+
+                        final newCollection = newChat.collection('chat');
+                        newCollection.add({
+                          'createdAt': Timestamp.now(),
+                          'content': 'Esta conversa é apenas entre você e /${selectedUser.id}/',
+                          'isImage': false,
+                          'isSystem': true,
+                          'userId': 'Global',
+                          'createdBy': loggedUser.id,
+                        });
+                      },
+                    ),
                   ),
                 ),
               ),

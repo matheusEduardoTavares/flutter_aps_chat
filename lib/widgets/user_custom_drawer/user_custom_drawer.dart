@@ -65,6 +65,7 @@ class _UserCustomDrawerState extends State<UserCustomDrawer> {
                       selected: UserCustomDrawer._selectedIndex == index,
                       leading: pagesItems[index].leading ?? Icon(
                         pagesItems[index].leadingData,
+                        size: 40.0,
                       ),
                       title: pagesItems[index].title ?? Text(
                         pagesItems[index].name,

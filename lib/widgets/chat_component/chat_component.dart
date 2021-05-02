@@ -78,23 +78,38 @@ class ChatComponent extends StatelessWidget {
             Expanded(
               child: ListView.builder(
                 itemCount: chatsAssociatedsWithMe.length,
-                itemBuilder: (ctx, index) => ListTile(
-                  title: Center(
-                    child: Text(
-                      '${_getOtherUserName(chatsAssociatedsWithMe[index])}',
-                      textAlign: TextAlign.justify,
-                    ),
-                  ),
-                  onTap: () {
-                    Navigator.of(context).pushNamed(
-                      PagesConfigs.chatDataPage,
-                      arguments: <String, dynamic>{
-                        'docChatName': _getOtherUserName(chatsAssociatedsWithMe[index]),
-                        'docChatStream': '${chatsAssociatedsWithMe[index].id}',
+                itemBuilder: (ctx, index) {
+                  final usersOnChat = List<String>.from(chatsAssociatedsWithMe[index]['users']);
+                  return Card(
+                    elevation: 5,
+                    child: ListTile(
+                      title: Text(
+                        '${_getOtherUserName(chatsAssociatedsWithMe[index])}',
+                        textAlign: TextAlign.end,
+                      ),
+                      leading: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            usersOnChat.isEmpty ? 'Todos usuários' : (
+                              usersOnChat.length == 2 ? 'Privado' : 'Grupo'
+                            ),
+                            style: TextStyle(color: Theme.of(context).accentColor),
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.of(context).pushNamed(
+                          PagesConfigs.chatDataPage,
+                          arguments: <String, dynamic>{
+                            'docChatName': _getOtherUserName(chatsAssociatedsWithMe[index]),
+                            'docChatStream': '${chatsAssociatedsWithMe[index].id}',
+                          },
+                        );
                       },
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ),
           ],
