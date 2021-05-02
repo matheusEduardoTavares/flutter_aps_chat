@@ -132,7 +132,8 @@ class _UsersListState extends State<UsersList> {
                     textAlign: TextAlign.end,
                   ),
                   enabled: widget.allChatsWithMe.where((currentChat) => currentChat['users'].
-                    contains(HomePage.allUsersWithoutMe[index].id)).toList().isEmpty,
+                    contains(HomePage.allUsersWithoutMe[index].id) && 
+                      currentChat['users'].length == 2).toList().isEmpty,
                   onTap: () async {
                     final isCreateNewChat = await CustomDialogs.confirmationDialog();
 
