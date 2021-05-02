@@ -17,6 +17,7 @@ abstract class PagesConfigs {
   static const authPage = '/authPage';
   static const userDataPage = '/userDataPage';
   static const chatDataPage = '/chatDataPage';
+  static const imagePage = '/imagePage';
 
   static final pages = <String, WidgetBuilder>{
     splashPage: (ctx) => SplashPage(),

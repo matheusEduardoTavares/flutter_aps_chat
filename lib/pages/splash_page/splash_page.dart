@@ -35,7 +35,7 @@ class SplashPage extends StatelessWidget {
                 ),
               );
             },
-          )
+          ),
         ],
       ),
     );

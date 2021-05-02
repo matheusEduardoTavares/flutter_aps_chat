@@ -1,9 +1,11 @@
 import 'package:aps_chat/pages/current_chat/current_chat.dart';
+import 'package:aps_chat/pages/image_page/image_page.dart';
 import 'package:aps_chat/providers/theme_config_provider/theme_config_provider.dart';
 import 'package:aps_chat/utils/colors_default/colors_default.dart';
 import 'package:aps_chat/utils/db_util.dart';
 import 'package:aps_chat/utils/navigator_config.dart';
 import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -63,6 +65,17 @@ class _InitialPageState extends State<InitialPage> {
                 builder: (ctx) => CurrentChat(
                   docChatName: docChatName,
                   docChatStream: docChatStream,
+                ),
+              );
+            }
+            else if (settings?.name == PagesConfigs.imagePage) {
+              final Map<String, dynamic> data = settings?.arguments;
+
+              final QueryDocumentSnapshot user = data['user'];
+
+              return MaterialPageRoute(
+                builder: (ctx) => ImagePage(
+                  user: user,
                 ),
               );
             }

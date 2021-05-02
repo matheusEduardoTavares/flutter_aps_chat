@@ -1,10 +1,11 @@
 import 'package:aps_chat/pages/home_page/home_page.dart';
+import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
 import 'package:aps_chat/utils/users_utilities/user_utilities.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class MessageComponent extends StatelessWidget {
+class MessageComponent extends StatefulWidget {
   const MessageComponent({
     Key key,
     @required this.content,
@@ -24,12 +25,19 @@ class MessageComponent extends StatelessWidget {
   final String userId;
   final String createdBy;
 
+  @override
+  _MessageComponentState createState() => _MessageComponentState();
+}
+
+class _MessageComponentState extends State<MessageComponent> {
+  var _userHasImage = true;
+
   String _getMessageUser(String notification) {
-    if (!notification.contains('/') || createdBy == null) {
+    if (!notification.contains('/') || widget.createdBy == null) {
       return notification;
     }
-    else if (createdBy != null && createdBy != HomePage.loggedUser.id) {
-      return 'Esta conversa é entre você e ${UserUtilities.getUserById(createdBy)['name']}';
+    else if (widget.createdBy != null && widget.createdBy != HomePage.loggedUser.id) {
+      return 'Esta conversa é entre você e ${UserUtilities.getUserById(widget.createdBy)['name']}';
     }
     String finalMessage = '';
     final messageInArray = notification.split('/');
@@ -46,48 +54,93 @@ class MessageComponent extends StatelessWidget {
     return finalMessage;
   }
 
+  Widget _getImage(QueryDocumentSnapshot us) {
+    final _defaultIcon = const Icon(
+      Icons.person_outline,
+      size: 20,
+    );
+
+    try {
+      final imageUrl = us['imageUrl'];
+
+      return CircleAvatar(
+        backgroundImage: NetworkImage(
+          imageUrl,
+        ),
+      );
+    }
+    catch (_) {
+      setState(() {
+        _userHasImage = false;
+      });
+      return CircleAvatar(
+        child: Center(child: _defaultIcon),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     QueryDocumentSnapshot user;
-    if (!isSystem) {
-      user = HomePage.allUsers.firstWhere((user) => user.id == userId);
+    if (!widget.isSystem) {
+      user = HomePage.allUsers.firstWhere((user) => user.id == widget.userId);
     }
 
-    return Align(
-      alignment: belongsToMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50.0)
-        ),
-        color: isSystem ? Colors.red : (belongsToMe ? Theme.of(context).primaryColor : Theme.of(context).accentColor),
-        elevation: 8,
-        child: Column(
-          children: [
-            Container(
-              width: MediaQuery.of(context).size.width * 0.4,
-              height: 10,
-              child: FittedBox(
-                child: Text(
-                  isSystem ? 'Mensagem do sistema' : '${user.get("name")}, ${DateFormat("dd/MM/yyyy HH:mm:ss").format(createdAt.toDate())}',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
+    return Stack(
+      children: [
+        Align(
+          alignment: widget.belongsToMe ? Alignment.centerRight : Alignment.centerLeft,
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(50.0)
             ),
-            Container(
-              width: MediaQuery.of(context).size.width * (isSystem ? 1.0 : 0.5),
-              padding: const EdgeInsets.all(15),
-              child: isImage ? Text('imagem') : Text(
-                !isSystem ? content : _getMessageUser(content), 
-                style: TextStyle(
-                  color: Colors.white,
+            color: widget.isSystem ? Colors.red : (widget.belongsToMe ? Theme.of(context).primaryColor : Theme.of(context).accentColor),
+            elevation: 8,
+            child: Column(
+              children: [
+                Container(
+                  width: MediaQuery.of(context).size.width * 0.3,
+                  height: 10,
+                  child: FittedBox(
+                    child: Text(
+                      widget.isSystem ? 'Mensagem do sistema' : '${user.get("name")}, ${DateFormat("dd/MM/yyyy HH:mm:ss").format(widget.createdAt.toDate())}',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
                 ),
-                // textAlign: isSystem ? TextAlign.center : (belongsToMe ? TextAlign.right : TextAlign.left),
-                textAlign: TextAlign.center,
-              ),
+                Container(
+                  width: MediaQuery.of(context).size.width * (widget.isSystem ? 1.0 : 0.5),
+                  padding: const EdgeInsets.all(15),
+                  child: widget.isImage ? Text('imagem') : Text(
+                    !widget.isSystem ? widget.content : _getMessageUser(widget.content), 
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
+                    // textAlign: isSystem ? TextAlign.center : (belongsToMe ? TextAlign.right : TextAlign.left),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+        if (!widget.isSystem)
+          Container(
+            height: 30,
+            child: GestureDetector(
+              child: _getImage(UserUtilities.getUserById(widget.userId)),
+              onTap: _userHasImage ? () {
+                Navigator.of(context).pushNamed(
+                  PagesConfigs.imagePage,
+                  arguments: <String, dynamic> {
+                    'user': UserUtilities.getUserById(widget.userId),
+                  }
+                );
+              } : null,
+            ),
+            alignment: widget.belongsToMe ? Alignment.topRight : Alignment.topLeft
+          ),
+      ],
     );
   }
 }

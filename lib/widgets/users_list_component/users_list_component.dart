@@ -34,7 +34,7 @@ class UsersListComponent extends StatelessWidget {
   Widget _getLeading(QueryDocumentSnapshot us) {
     final _defaultIcon = const Icon(
       Icons.person_outline,
-      size: 25.0,
+      size: 20,
     );
 
     try {
