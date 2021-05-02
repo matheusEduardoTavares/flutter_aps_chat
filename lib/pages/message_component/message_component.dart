@@ -68,7 +68,7 @@ class MessageComponent extends StatelessWidget {
               height: 10,
               child: FittedBox(
                 child: Text(
-                  isSystem ? 'Mensagem do sistema' : '${user.get("name")}, ${DateFormat("dd/MM/yyyy hh:mm:ss").format(createdAt.toDate())}',
+                  isSystem ? 'Mensagem do sistema' : '${user.get("name")}, ${DateFormat("dd/MM/yyyy HH:mm:ss").format(createdAt.toDate())}',
                   style: TextStyle(color: Colors.white),
                 ),
               ),

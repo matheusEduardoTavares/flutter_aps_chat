@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 
 abstract class CustomDialogs {
   static Future<bool> confirmationDialog({
-    Widget confirmation,
+    Widget title,
     Widget content,
     List<Widget> actions,
   }) async {
@@ -13,7 +13,7 @@ abstract class CustomDialogs {
       barrierDismissible: true,
       barrierLabel: '${DateTime.now()}',
       pageBuilder: (ctx, _, __) => AlertDialog(
-        title: confirmation ?? const Text('Confirmação'),
+        title: title ?? const Text('Confirmação'),
         content: content ?? const Text('Você confirma a criação de um chat com este(s) usuário(s) ?'),
         actions: actions ?? [
           TextButton(

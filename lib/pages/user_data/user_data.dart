@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:aps_chat/pages/home_page/home_page.dart';
+import 'package:aps_chat/utils/check_internet_connection/check_internet_connection.dart';
 import 'package:aps_chat/utils/textformfields_validator/textformfields_validator.dart';
 import 'package:aps_chat/widgets/user_custom_drawer/user_custom_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -39,12 +40,12 @@ class _UserDataState extends State<UserData> {
     _emailController = TextEditingController(text: HomePage.loggedUser.get('email'));
   }
 
-  Future<void> _showErrorDialog({bool isErrorMailAlreadyExists, String message}) => showGeneralDialog(
+  Future<void> _showErrorDialog({bool isErrorMailAlreadyExists, String message, String title}) => showGeneralDialog(
     context: context,
     barrierDismissible: true,
     barrierLabel: '',
     pageBuilder: (_, __, ___) => AlertDialog(
-      title: Text('Erro'),
+      title: Text(title ?? 'Erro'),
       content: Text(message ?? (isErrorMailAlreadyExists ? 
         'E-mail já está em uso. Por favor, use outro e-mail' : 'Ocorreu um erro'
         ' ao atualizar os dados, por favor, contate algum administrador')),
@@ -228,6 +229,24 @@ class _UserDataState extends State<UserData> {
                                 setState(() {
                                   _isLoadingRequest = true;
                                 });
+
+                                final hasInternet = await 
+                                  CheckInternetConnection.hasInternetConnection();
+
+                                if (!hasInternet) {
+                                  setState(() {
+                                    _isLoadingRequest = false;
+                                  });
+
+                                  await _showErrorDialog(
+                                    isErrorMailAlreadyExists: false,
+                                    title: 'Sem conexão',
+                                    message: 'Você está sem internet e por isso não pode atualizar os dados'
+                                  );
+
+                                  return;
+                                }
+
                                 final mail = _emailController.value.text.trim();
                                 final name = _nameController.value.text.trim();
 

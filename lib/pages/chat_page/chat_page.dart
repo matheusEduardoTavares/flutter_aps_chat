@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:aps_chat/utils/check_internet_connection/check_internet_connection.dart';
+import 'package:aps_chat/utils/custom_dialogs/custom_dialogs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -32,14 +34,14 @@ class _ChatPageState extends State<ChatPage> {
     _messageController = TextEditingController();
   }
   
-  Future<void> _showErrorDialog() => showGeneralDialog(
+  Future<void> _showErrorDialog({Widget title, Widget content, List<Widget> actions}) => showGeneralDialog(
     context: context,
     barrierDismissible: true,
     barrierLabel: '',
     pageBuilder: (_, __, ___) => AlertDialog(
-      title: Text('Erro'),
-      content: Text('Erro ao enviar a mensagem. Consulte um administrador'),
-      actions: [
+      title: title ?? const Text('Erro'),
+      content: content ?? const Text('Erro ao enviar a mensagem. Consulte um administrador'),
+      actions: actions ?? [
         TextButton(
           child: Text('OK'),
           onPressed: () => Navigator.of(context).pop(),
@@ -98,10 +100,28 @@ class _ChatPageState extends State<ChatPage> {
                 ),
                 backgroundColor: _message.isEmpty ? Colors.grey : null,
                 onPressed: _message.isEmpty ? null : () async {
+                  bool hasFilterMessage = false;
                   try {
+                    if (_message.length > 1200) {
+                      final isConfirmContinue = await CustomDialogs.confirmationDialog(
+                        title: const Text('Aviso de perda de informações'),
+                        content: const Text(
+                          'O texto digitado é muito grande. O limite são 1200 caracteres.'
+                          ' Confirme se deseja enviar a mensagem mesmo assim. '
+                          'Será enviado apenas os primeiros 1200 caracteres'
+                        ),
+                      );
+
+                      if (isConfirmContinue == null || !isConfirmContinue) {
+                        return;
+                      }
+
+                      hasFilterMessage = true;
+                    }
+
                     widget.chatCollection.add({
                       'userId': HomePage.loggedUser.id,
-                      'content': _message?.trim(),
+                      'content': hasFilterMessage ? _message?.trim()?.substring(0, 1200) : _message?.trim(),
                       'isImage': false,
                       'isSystem': false,
                       'createdAt': Timestamp.now(),
@@ -112,6 +132,17 @@ class _ChatPageState extends State<ChatPage> {
                       _message = '';
                       _messageController.clear();
                     });
+
+                    final hasInternet = await CheckInternetConnection.hasInternetConnection();
+
+                    if (!hasInternet) {
+                      _showErrorDialog(
+                        title: const Text('Sem conexão'),
+                        content: const Text('Você está sem conexão com a internet no momento.'
+                          ' Assim que possuir internet a mensagem será enviada'
+                        )
+                      );
+                    }
 
                     Timer(
                       Duration(milliseconds: 300),
