@@ -28,6 +28,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final _cameraPaths = <String>[];
+  final _filesGallery = <File>[];
   var _isKeyboardOpen = false;
   KeyboardVisibilityNotification keyboardListener;
   String _message = '';
@@ -56,6 +57,12 @@ class _ChatPageState extends State<ChatPage> {
   void _addImages(List<String> newPaths) {
     setState(() {
       _cameraPaths.addAll(newPaths);
+    });
+  }
+
+  void _addGalleryImages(List<File> newFiles) {
+    setState(() {
+      _filesGallery.addAll(newFiles);
     });
   }
   
@@ -98,6 +105,30 @@ class _ChatPageState extends State<ChatPage> {
       ),
     );
   }
+
+  Widget _buildGalleryImage(File file) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 5.0),
+      child: InkWell(
+        onTap: () async {
+          final isConfirmClose = await CustomDialogs.confirmationDialog(
+            content: const Text('Confirma a deleção desta imagem ?'),
+          );
+
+          if (isConfirmClose != null && isConfirmClose) {
+            setState(() {
+              _filesGallery.removeAt(_filesGallery.indexOf(file));
+            });
+          }
+        },
+        child: CircleAvatar(
+          backgroundImage: FileImage(
+            file,
+          ),
+        ),
+      ),
+    );
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -135,9 +166,12 @@ class _ChatPageState extends State<ChatPage> {
                       children: [
                         if (_cameraPaths.isNotEmpty)
                           ..._cameraPaths.map((img) => _buildImage(img)).toList(),
+                        if (_filesGallery.isNotEmpty)
+                          ..._filesGallery.map((img) => _buildGalleryImage(img)).toList(),
                         ButtonsUpload(
                           addImages: _addImages,
                           messageFocus: _messageFocus,
+                          addGalleryImages: _addGalleryImages,
                         )
                       ],
                     ),
@@ -169,8 +203,8 @@ class _ChatPageState extends State<ChatPage> {
                       Icons.send,
                       size: 30,
                     ),
-                    backgroundColor: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty ? Colors.grey : null,
-                    onPressed: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty ? null : () async {
+                    backgroundColor: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty && _filesGallery.isEmpty ? Colors.grey : null,
+                    onPressed: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty && _filesGallery.isEmpty ? null : () async {
                       bool hasFilterMessage = false;
                       try {
                         if (_message.length > 1200) {
@@ -205,13 +239,13 @@ class _ChatPageState extends State<ChatPage> {
                           if (currentIndex == 0) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Iniciando o envio das imagens para o servidor ...'),
+                                content: Text('Iniciando o envio das imagens capturadas para o servidor ...'),
                               ),
                             );
                           }
 
                           final ref = FirebaseStorage.instance.ref()
-                            .child('images_chat')
+                            .child('images_chat_take')
                             .child(_cameraPaths[currentIndex]);
 
                           await ref.putFile(File(_cameraPaths[currentIndex]));
@@ -229,7 +263,40 @@ class _ChatPageState extends State<ChatPage> {
                           ScaffoldMessenger.of(context).hideCurrentSnackBar();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Imagem ${currentIndex + 1} / ${_cameraPaths.length} enviada !!'),
+                              content: Text('Imagem capturada ${currentIndex + 1} / ${_cameraPaths.length} enviada !!'),
+                            ),
+                          );
+                        }
+
+                        for (var currentIndex = 0; currentIndex < _filesGallery.length; currentIndex++) {
+                          if (currentIndex == 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Iniciando o envio das imagens da galeria para o servidor ...'),
+                              ),
+                            );
+                          }
+
+                          final ref = FirebaseStorage.instance.ref()
+                            .child('images_chat_gallery')
+                            .child(_filesGallery[currentIndex].path);
+
+                          await ref.putFile(_filesGallery[currentIndex]);
+                          final url = await ref.getDownloadURL();
+
+                          await widget.chatCollection.add({
+                            'userId': HomePage.loggedUser.id,
+                            'content': url,
+                            'isImage': true,
+                            'isSystem': false,
+                            'createdAt': Timestamp.now(),
+                            'createdBy': HomePage.loggedUser.id,
+                          });
+
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Imagem da galeria ${currentIndex + 1} / ${_filesGallery.length} enviada !!'),
                             ),
                           );
                         }
@@ -238,6 +305,7 @@ class _ChatPageState extends State<ChatPage> {
                           _message = '';
                           _messageController.clear();
                           _cameraPaths.clear();
+                          _filesGallery.clear();
                         });
 
                         final hasInternet = await CheckInternetConnection.hasInternetConnection();
@@ -246,7 +314,8 @@ class _ChatPageState extends State<ChatPage> {
                           _showErrorDialog(
                             title: const Text('Sem conexão'),
                             content: const Text('Você está sem conexão com a internet no momento.'
-                              ' Assim que possuir internet a mensagem será enviada'
+                              ' Assim que possuir internet a mensagem será enviada, porém, todas as '
+                              'fotos serão perdidas'
                             )
                           );
                         }
