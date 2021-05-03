@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:aps_chat/pages/home_page/home_page.dart';
 import 'package:aps_chat/utils/check_internet_connection/check_internet_connection.dart';
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:aps_chat/utils/textformfields_validator/textformfields_validator.dart';
 import 'package:aps_chat/widgets/user_custom_drawer/user_custom_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,7 +10,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 
 class UserData extends StatefulWidget {
   const UserData({
@@ -34,7 +34,6 @@ class _UserDataState extends State<UserData> {
   final _formKey = GlobalKey<FormState>();
   var _isLoadingRequest = false;
   var _isAddImage = false;
-  final _getImage = ImagePicker();
   String _selectedImagePath;
   File _fileWithImage;
   var _valueChanged = false;
@@ -110,6 +109,12 @@ class _UserDataState extends State<UserData> {
   //   );
   // }
 
+  void _addImage(List<String> paths) {
+    setState(() {
+      _selectedImagePath = paths.first;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,15 +137,20 @@ class _UserDataState extends State<UserData> {
                     _hasErroGetImage ? InkWell(
                       onTap: () async {
                         try {
-                          final image = await _getImage.getImage(
-                            source: ImageSource.camera,
-                            imageQuality: 50,
+                          final imagesPath = await Navigator.of(context).pushNamed(
+                            DetailsPages.cameraPage,
+                            arguments: {
+                              'addImages': _addImage,
+                              'isOnlyOneImage': true,
+                            }
                           );
 
-                          if (image != null) {
+                          final images = List<String>.from(imagesPath ?? []);
+
+                          if (images != null && images.isNotEmpty) {
                             setState(() {
+                              _addImage(images);
                               _valueChanged = true;
-                              _selectedImagePath = image.path;
                               _fileWithImage = File(
                                 _selectedImagePath,
                               );
@@ -298,7 +308,7 @@ class _UserDataState extends State<UserData> {
                                 if (_isAddImage) {
                                   final ref = FirebaseStorage.instance.ref()
                                     .child('images_profile')
-                                    .child('${_user.uid}.jpg');
+                                    .child(_selectedImagePath);
 
                                   await ref.putFile(_fileWithImage);
                                   final url = await ref.getDownloadURL();

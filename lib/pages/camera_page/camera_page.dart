@@ -7,6 +7,12 @@ import 'package:path/path.dart' as path;
 import 'package:permission_handler/permission_handler.dart';
 
 class CameraPage extends StatefulWidget {
+  const CameraPage({
+    this.isOnlyOneImage = false,
+  });
+
+  final bool isOnlyOneImage;
+
   @override
   _CameraPageState createState() => _CameraPageState();
 }
@@ -158,39 +164,43 @@ class _CameraPageState extends State<CameraPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                FloatingActionButton(
-                  heroTag: '${widget.hashCode}-${DateTime.now()}-1',
-                  child: Icon(Icons.camera, size: 40),
-                  onPressed: () async {
-                    setState(() {
-                      _isLoadingImage = true;
-                    });
-                    final file = await _cameraController.takePicture();
-                    await Future.delayed(const Duration(seconds: 1));
-                    if (file != null) {
+                if (!((widget.isOnlyOneImage ?? false) && _quantityImagesCaptured == 1))
+                  FloatingActionButton(
+                    heroTag: '${widget.hashCode}-${DateTime.now()}-1',
+                    child: Icon(Icons.camera, size: 40),
+                    onPressed: () async {
                       setState(() {
-                        _paths.add(
-                          path.join('${DateTime.now()}', file.path),
-                        );
-                        _quantityImagesCaptured++;
-                        _isLoadingImage = false;
+                        _isLoadingImage = true;
                       });
+                      final file = await _cameraController.takePicture();
+                      await Future.delayed(const Duration(seconds: 1));
+                      if (file != null) {
+                        setState(() {
+                          _paths.add(
+                            path.join('${DateTime.now()}', file.path),
+                          );
+                          _quantityImagesCaptured++;
+                          _isLoadingImage = false;
+                        });
+                      }
                     }
-                  }
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Color.fromRGBO(0, 0, 0, 0.5)
                   ),
-                  child: const Center(
-                    child: Text(
-                      'Capturar imagem',
-                      style: TextStyle(color: Colors.white, fontSize: 15),
+                if (!((widget.isOnlyOneImage ?? false) && _quantityImagesCaptured == 1))
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Color.fromRGBO(0, 0, 0, 0.5)
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Capturar imagem',
+                          style: TextStyle(color: Colors.white, fontSize: 15),
+                        ),
+                      )
                     ),
-                  )
-                ),
+                  ),
               ],
             ),
           ),

@@ -100,8 +100,14 @@ class _InitialPageState extends State<InitialPage> {
               );
             }
             else if (settings?.name == DetailsPages.cameraPage) {
+              final Map<String, dynamic> data = settings?.arguments;
+
+              final bool isOnlyOneImage = data['isOnlyOneImage'] ?? false;
+
               return MaterialPageRoute(
-                builder: (ctx) => CameraPage(),
+                builder: (ctx) => CameraPage(
+                  isOnlyOneImage: isOnlyOneImage,
+                ),
               );
             }
 
