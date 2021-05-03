@@ -249,7 +249,6 @@ class _SignUpPageState extends State<SignUpPage> {
                 child: TextButton(
                   child: const Text('Já possui conta ? Faça o login'),
                   onPressed: () {
-                    print('clicado em fazer login');
                     GlobalCustomDrawer.changePage(DetailsPages.loginPage);
                     Navigator.of(context).pushReplacementNamed(DetailsPages.loginPage);
                   },

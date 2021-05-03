@@ -3,6 +3,7 @@ import 'package:aps_chat/utils/check_internet_connection/check_internet_connecti
 import 'package:aps_chat/utils/custom_dialogs/custom_dialogs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 class UsersList extends StatefulWidget {
   const UsersList({
@@ -58,7 +59,6 @@ class _UsersListState extends State<UsersList> {
       );
     }
     catch (_) {
-      print('aqui tem erro');
       return CircleAvatar(
         child: Center(child: _defaultIcon),
       );
@@ -276,6 +276,39 @@ class _UsersListState extends State<UsersList> {
             ),
           ),
         if (_usersSelected.length >= 2)
+          const SizedBox(height: 10),
+        if (_usersSelected.length >= 1)
+          Container(
+            height: 50,
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: ElevatedButton(
+              child: _isLoadingCreateGroup ? Center(
+                child: CircularProgressIndicator(),
+              ) : const Text('Enviar e-mail'),
+              onPressed: _isLoadingCreateGroup ? () {} : () async {
+                final hasInternet = await CheckInternetConnection.
+                  hasInternetConnection();
+
+                if (!hasInternet) {
+                  _showNetworkError(
+                    message: 'Você está sem internet e por isso não conseguirá enviar o e-mail'
+                  );
+                  return;
+                }
+
+                final Email email = Email(
+                  recipients: _usersSelected.map((us) {
+                    String email = us['email'];
+                    return email;
+                  }).toList(),
+                  isHTML: false,
+                );
+
+                await FlutterEmailSender.send(email);
+              },
+            ),
+          ),
+        if (_usersSelected.length >= 1)
           const SizedBox(height: 10),
       ],
     );

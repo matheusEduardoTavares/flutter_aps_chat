@@ -170,7 +170,6 @@ class _LoginPageState extends State<LoginPage> {
                 child: TextButton(
                   child: const Text('Ainda não possui conta ? Crie uma conta'),
                   onPressed: () {
-                    print('clicado em criar conta');
                     GlobalCustomDrawer.changePage(DetailsPages.signUpPage);
                     Navigator.of(context).pushReplacementNamed(DetailsPages.signUpPage);
                   },
