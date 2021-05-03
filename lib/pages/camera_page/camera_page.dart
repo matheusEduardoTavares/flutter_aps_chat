@@ -18,7 +18,7 @@ class _CameraPageState extends State<CameraPage> {
   final _appBar = AppBar(
     title: const Text('Capturar imagens'),
   );
-
+  var _isLoadingImage = false;
 
   @override 
   void initState() {
@@ -29,7 +29,9 @@ class _CameraPageState extends State<CameraPage> {
       ResolutionPreset.medium,
     );
 
-    _cameraController.initialize().then((_) => setState(() => _isLoading = false));
+    _cameraController.initialize().then((_) {
+      _cameraController.setFlashMode(FlashMode.off).then((_) => setState(() => _isLoading = false));
+    });
   }
 
   @override
@@ -79,13 +81,18 @@ class _CameraPageState extends State<CameraPage> {
                   heroTag: '${widget.hashCode}-${DateTime.now()}-1',
                   child: Icon(Icons.camera, size: 40),
                   onPressed: () async {
+                    setState(() {
+                      _isLoadingImage = true;
+                    });
                     final file = await _cameraController.takePicture();
+                    await Future.delayed(const Duration(seconds: 1));
                     if (file != null) {
                       setState(() {
                         _paths.add(
                           path.join('${DateTime.now()}', file.path),
                         );
                         _quantityImagesCaptured++;
+                        _isLoadingImage = false;
                       });
                     }
                   }
@@ -118,6 +125,7 @@ class _CameraPageState extends State<CameraPage> {
                   onPressed: () async {
                     if (_quantityImagesCaptured == 0) {
                       Navigator.of(context).pop();
+                      return;
                     }
 
                     final isConfirmClose = await CustomDialogs.confirmationDialog(
@@ -156,7 +164,7 @@ class _CameraPageState extends State<CameraPage> {
                   FloatingActionButton(
                     heroTag: '${widget.hashCode}-${DateTime.now()}-3',
                     child: Icon(Icons.check, size: 40),
-                    onPressed: () {
+                    onPressed: _isLoadingImage ? null : () {
                       Navigator.of(context).pop(_paths);
                     }
                   ),

@@ -6,6 +6,7 @@ import 'package:aps_chat/utils/custom_dialogs/custom_dialogs.dart';
 import 'package:aps_chat/widgets/buttons_upload/buttons_upload.dart';
 import 'package:aps_chat/widgets/message_component/message_component.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 import 'package:aps_chat/pages/home_page/home_page.dart';
@@ -32,10 +33,13 @@ class _ChatPageState extends State<ChatPage> {
   String _message = '';
   TextEditingController _messageController;
   final _scrollController = ScrollController();
+  FocusNode _messageFocus;
 
   @override 
   void initState() {
     super.initState();
+
+    _messageFocus = FocusNode();
 
     keyboardListener = KeyboardVisibilityNotification()..
       addNewListener(
@@ -133,6 +137,7 @@ class _ChatPageState extends State<ChatPage> {
                           ..._cameraPaths.map((img) => _buildImage(img)).toList(),
                         ButtonsUpload(
                           addImages: _addImages,
+                          messageFocus: _messageFocus,
                         )
                       ],
                     ),
@@ -148,6 +153,7 @@ class _ChatPageState extends State<ChatPage> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                       ),
+                      focusNode: _messageFocus,
                       controller: _messageController,
                       textCapitalization: TextCapitalization.sentences,
                       onChanged: (value) {
@@ -163,8 +169,8 @@ class _ChatPageState extends State<ChatPage> {
                       Icons.send,
                       size: 30,
                     ),
-                    backgroundColor: _message?.trim()?.isEmpty ?? true ? Colors.grey : null,
-                    onPressed: _message?.trim()?.isEmpty ?? true ? null : () async {
+                    backgroundColor: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty ? Colors.grey : null,
+                    onPressed: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty ? null : () async {
                       bool hasFilterMessage = false;
                       try {
                         if (_message.length > 1200) {
@@ -184,18 +190,54 @@ class _ChatPageState extends State<ChatPage> {
                           hasFilterMessage = true;
                         }
 
-                        widget.chatCollection.add({
-                          'userId': HomePage.loggedUser.id,
-                          'content': hasFilterMessage ? _message?.trim()?.substring(0, 1200) : _message?.trim(),
-                          'isImage': false,
-                          'isSystem': false,
-                          'createdAt': Timestamp.now(),
-                          'createdBy': HomePage.loggedUser.id,
-                        });
+                        if (_message?.trim()?.isNotEmpty ?? false) {
+                          widget.chatCollection.add({
+                            'userId': HomePage.loggedUser.id,
+                            'content': hasFilterMessage ? _message?.trim()?.substring(0, 1200) : _message?.trim(),
+                            'isImage': false,
+                            'isSystem': false,
+                            'createdAt': Timestamp.now(),
+                            'createdBy': HomePage.loggedUser.id,
+                          });
+                        }
+
+                        for (var currentIndex = 0; currentIndex < _cameraPaths.length; currentIndex++) {
+                          if (currentIndex == 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Iniciando o envio das imagens para o servidor ...'),
+                              ),
+                            );
+                          }
+
+                          final ref = FirebaseStorage.instance.ref()
+                            .child('images_chat')
+                            .child(_cameraPaths[currentIndex]);
+
+                          await ref.putFile(File(_cameraPaths[currentIndex]));
+                          final url = await ref.getDownloadURL();
+
+                          await widget.chatCollection.add({
+                            'userId': HomePage.loggedUser.id,
+                            'content': url,
+                            'isImage': true,
+                            'isSystem': false,
+                            'createdAt': Timestamp.now(),
+                            'createdBy': HomePage.loggedUser.id,
+                          });
+
+                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Imagem ${currentIndex + 1} / ${_cameraPaths.length} enviada !!'),
+                            ),
+                          );
+                        }
 
                         setState(() {
                           _message = '';
                           _messageController.clear();
+                          _cameraPaths.clear();
                         });
 
                         final hasInternet = await CheckInternetConnection.hasInternetConnection();
@@ -234,6 +276,7 @@ class _ChatPageState extends State<ChatPage> {
   void dispose() {
     _messageController?.dispose();
     keyboardListener?.dispose();
+    _messageFocus?.dispose();
 
     super.dispose();
   }

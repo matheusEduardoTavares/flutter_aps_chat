@@ -6,9 +6,11 @@ typedef AddImages = void Function(List<String>);
 class ButtonsUpload extends StatefulWidget {
   const ButtonsUpload({
     @required this.addImages,
+    @required this.messageFocus,
   });
 
   final AddImages addImages;
+  final FocusNode messageFocus;
 
   @override
   _ButtonsUploadState createState() => _ButtonsUploadState();
@@ -29,6 +31,7 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
             size: 20,
           ),
           onPressed: () async {
+            widget.messageFocus?.unfocus();
             final imagesPath = await Navigator.of(context).pushNamed(
               DetailsPages.cameraPage,
               arguments: {
@@ -52,21 +55,23 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
             size: 20,
           ),
           onPressed: () {
+            widget.messageFocus?.unfocus();
             print('Capturar imagem');
           }
         ),
-        FloatingActionButton(
-          heroTag: '3',
-          mini: true,
-          child: Icon(
-            Icons.upload_file,
-            color: Colors.white,
-            size: 20,
-          ),
-          onPressed: () {
-            print('Enviar arquivo');
-          }
-        ),
+        // FloatingActionButton(
+        //   heroTag: '3',
+        //   mini: true,
+        //   child: Icon(
+        //     Icons.upload_file,
+        //     color: Colors.white,
+        //     size: 20,
+        //   ),
+        //   onPressed: () {
+        //     widget.messageFocus?.unfocus();
+        //     print('Enviar arquivo');
+        //   }
+        // ),
       ],
     );
   }

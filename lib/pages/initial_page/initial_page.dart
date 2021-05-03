@@ -78,10 +78,14 @@ class _InitialPageState extends State<InitialPage> {
               final Map<String, dynamic> data = settings?.arguments;
 
               final QueryDocumentSnapshot user = data['user'];
+              final String url = data['url'];
+              final String nameAppBar = data['nameAppBar'];
 
               return MaterialPageRoute(
                 builder: (ctx) => ImagePage(
                   user: user,
+                  url: url,
+                  nameAppBar: nameAppBar,
                 ),
               );
             }

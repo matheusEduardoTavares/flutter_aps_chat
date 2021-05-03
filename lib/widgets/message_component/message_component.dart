@@ -1,6 +1,7 @@
 import 'package:aps_chat/pages/home_page/home_page.dart';
 import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:aps_chat/utils/users_utilities/user_utilities.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -109,7 +110,42 @@ class _MessageComponentState extends State<MessageComponent> {
                 Container(
                   width: MediaQuery.of(context).size.width * (widget.isSystem ? 1.0 : 0.5),
                   padding: const EdgeInsets.all(15),
-                  child: widget.isImage ? Text('imagem') : Text(
+                  child: widget.isImage ? GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(
+                        DetailsPages.imagePage,
+                        arguments: <String, dynamic> {
+                          'user': UserUtilities.getUserById(widget.userId),
+                          'nameAppBar': 'Imagem',
+                          'url': widget.content,
+                        }
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20.0),
+                      child: CachedNetworkImage(
+                        imageUrl: widget.content,
+                        placeholder: (_, __) {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        },
+                        errorWidget: (ctx, __, ___) {
+                          return Column(
+                            children: [
+                              const Text('Algo deu errado ao carregar a imagem'),
+                              const SizedBox(height: 16),
+                              Icon(
+                                Icons.error,
+                                color: Theme.of(ctx).errorColor,
+                                size: 40,
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+                  ) : Text(
                     !widget.isSystem ? widget.content : _getMessageUser(widget.content), 
                     style: TextStyle(
                       color: Colors.white,
