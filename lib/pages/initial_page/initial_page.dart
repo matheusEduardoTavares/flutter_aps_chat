@@ -11,6 +11,8 @@ import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 class InitialPage extends StatefulWidget {
 
@@ -46,6 +48,7 @@ class _InitialPageState extends State<InitialPage> {
 
   @override
   Widget build(BuildContext context) {
+    Intl.defaultLocale = 'pt_BR';
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<ThemeConfigProvider>(
@@ -60,6 +63,13 @@ class _InitialPageState extends State<InitialPage> {
           initialRoute: DetailsPages.splashPage,
           routes: DetailsPages.pages,
           navigatorKey: NavigatorConfig.navKey,
+          localizationsDelegates: [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate
+          ],
+          supportedLocales: [
+            const Locale('pt', 'BR')
+          ],
           onGenerateRoute: (settings) {
             if (settings?.name == DetailsPages.chatDataPage) {
               final Map<String, dynamic> data = settings?.arguments;

@@ -189,6 +189,7 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                       focusNode: _messageFocus,
                       controller: _messageController,
+                      textInputAction: TextInputAction.send,
                       textCapitalization: TextCapitalization.sentences,
                       onChanged: (value) {
                         setState(() {

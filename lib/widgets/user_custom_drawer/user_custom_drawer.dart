@@ -1,6 +1,7 @@
 import 'package:aps_chat/models/details_page.dart';
 import 'package:aps_chat/utils/asset_images/asset_images.dart';
 import 'package:aps_chat/utils/details_pages/details_pages.dart';
+import 'package:aps_chat/utils/navigator_config.dart';
 import 'package:aps_chat/widgets/opacity_request/opacity_request.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -88,7 +89,10 @@ class _UserCustomDrawerState extends State<UserCustomDrawer> {
                           ).then((_) {
                             UserCustomDrawer.changePage(DetailsPages.homePage);
                             WidgetsBinding.instance.addPostFrameCallback((_) {
-                              Navigator.of(context).pop();
+                              final currentContext = NavigatorConfig.navKey.currentState.overlay.context;
+                              if (Navigator.of(currentContext).canPop()) {
+                                Navigator.of(currentContext).pop();
+                              }
                             });
                           });
                         }

@@ -3,6 +3,7 @@ import 'package:aps_chat/utils/check_internet_connection/check_internet_connecti
 import 'package:aps_chat/utils/custom_dialogs/custom_dialogs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart';
 
 class UsersList extends StatefulWidget {
@@ -180,7 +181,7 @@ class _UsersListState extends State<UsersList> {
                     final newCollection = newChat.collection('chat');
                     newCollection.add({
                       'createdAt': Timestamp.now(),
-                      'content': 'Esta conversa é apenas entre você e /${selectedUser.id}/',
+                      'content': 'Esta conversa é privada, e por isso mais ninguém pode vê-la',
                       'isImage': false,
                       'isSystem': true,
                       'userId': 'Global',
@@ -296,15 +297,39 @@ class _UsersListState extends State<UsersList> {
                   return;
                 }
 
-                final Email email = Email(
-                  recipients: _usersSelected.map((us) {
-                    String email = us['email'];
-                    return email;
-                  }).toList(),
-                  isHTML: false,
-                );
+                try {
+                  final Email email = Email(
+                    recipients: _usersSelected.map((us) {
+                      String email = us['email'];
+                      return email;
+                    }).toList(),
+                    isHTML: false,
+                  );
 
-                await FlutterEmailSender.send(email);
+                  await FlutterEmailSender.send(email);
+                }
+                on PlatformException catch (e) {
+                  if (e.code == 'not_available') {
+                    _showErrorDialog(
+                      context: context,
+                      content: const Text('Para enviar e-mail, é necessário ter um'
+                        ' cliente de e-mail configurado antes'
+                      )
+                    );
+                  }
+                  else {
+                    _showErrorDialog(
+                      context: context,
+                      content: const Text('Ocorreu um erro. Por favor, contate o administrador')
+                    );
+                  }
+                }
+                catch (_) {
+                  _showErrorDialog(
+                    context: context,
+                    content: const Text('Ocorreu um erro. Por favor, contate o administrador')
+                  );
+                }
               },
             ),
           ),

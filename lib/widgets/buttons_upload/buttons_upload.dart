@@ -4,6 +4,7 @@ import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_absolute_path/flutter_absolute_path.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 typedef AddImages = void Function(List<String>);
 typedef AddGalleryImages = void Function(List<File>);
@@ -25,6 +26,7 @@ class ButtonsUpload extends StatefulWidget {
 
 class _ButtonsUploadState extends State<ButtonsUpload> {
   final images = <Asset>[];
+  var _isFirstClick = true;
 
   Future<void> _showErrorDialog({Widget title, Widget content, List<Widget> actions}) => showGeneralDialog(
     context: context,
@@ -59,7 +61,11 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
           selectCircleStrokeColor: "#000000",
         ),
       );
-    } catch (_) {
+    } catch (e) {
+      if (e is NoImagesSelectedException) {
+        return;
+      }
+      
       _showErrorDialog();
     }
 
@@ -72,7 +78,9 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
       allImages.add(newImage);
     }
 
-    widget.addGalleryImages?.call(allImages);
+    if (allImages != null && allImages.isNotEmpty) {
+      widget.addGalleryImages?.call(allImages);
+    }
   }
 
   @override
@@ -84,7 +92,7 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
           heroTag: '1',
           mini: true,
           child: Icon(
-            Icons.image,
+            Icons.camera_alt,
             color: Colors.white,
             size: 20,
           ),
@@ -108,14 +116,59 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
           heroTag: '2',
           mini: true,
           child: Icon(
-            Icons.camera_alt,
+            Icons.image,
             color: Colors.white,
             size: 20,
           ),
           onPressed: () async {
             widget.messageFocus?.unfocus();
             
-            await _getImagesGallery();
+            final status = await Permission.storage.status;
+
+            if (status == PermissionStatus.granted) {
+              await _getImagesGallery();
+              return;
+            }
+
+            if (_isFirstClick && status != PermissionStatus.granted) {
+              await Permission.storage.request();    
+            }
+
+            if (status == PermissionStatus.permanentlyDenied || status == PermissionStatus.denied) {
+              await _showErrorDialog(
+                content: const Text('É necessário ativar todas as permissões para prosseguir')
+              );
+
+              await openAppSettings();
+
+              final status = await Permission.storage.status;
+              if (status == PermissionStatus.granted) {
+                await _getImagesGallery();
+              }
+            }
+            else {
+              var isAccepted = false;
+              if (!_isFirstClick) {
+                await Permission.storage.request(); 
+
+                final newStatus = await Permission.storage.status;
+
+                if (newStatus == PermissionStatus.granted) {
+                  isAccepted = true;
+                  await _getImagesGallery();
+                }
+              }
+
+              if (!isAccepted) {
+                await _showErrorDialog(
+                  content: const Text('É necessário ativar todas as permissões para prosseguir')
+                );
+              }
+            }
+
+            setState(() {
+              _isFirstClick = false;
+            });
           }
         ),
         // FloatingActionButton(

@@ -40,6 +40,7 @@ class _MessageComponentState extends State<MessageComponent> {
 
     String finalMessage = '';
     final messageInArray = notification.split('/');
+    print(HomePage.loggedUser.id);
     for (final currentMessage in messageInArray) {
       final user = UserUtilities.getUserById(currentMessage);
       if (user == null) {

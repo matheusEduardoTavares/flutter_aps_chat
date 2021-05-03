@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 import 'package:path/path.dart' as path;
+import 'package:permission_handler/permission_handler.dart';
 
 class CameraPage extends StatefulWidget {
   @override
@@ -29,25 +30,105 @@ class _CameraPageState extends State<CameraPage> {
       ResolutionPreset.medium,
     );
 
-    _cameraController.initialize().then((_) {
-      _cameraController.setFlashMode(FlashMode.off).then((_) => setState(() => _isLoading = false));
+    Permission.camera.request().then((status) {
+      if (status == PermissionStatus.granted) {
+        Permission.speech.request().then((status) {
+          if (status == PermissionStatus.granted) {
+            _initializeCamera();
+          }
+          else if (status.isPermanentlyDenied) {
+            _showErrorDialog().then((_) {
+              openAppSettings().then((_) {
+                Permission.speech.isGranted.then((isGranted) {
+                  if (isGranted != null && isGranted) {
+                    _initializeCamera();
+                  }
+                  else {
+                    Navigator.of(context).pop();
+                  }
+                });
+              });
+            });
+          }
+          else {
+            _showErrorDialog().then((value) => Navigator.of(context).pop());
+          }
+        });
+      }
+      else if (status.isPermanentlyDenied) {
+        _showErrorDialog().then((_) {
+          openAppSettings().then((_) {
+            Permission.camera.isGranted.then((isGranted) {
+              if (isGranted != null && isGranted) {
+                Permission.speech.request().then((status) {
+                  if (status == PermissionStatus.granted) {
+                    _initializeCamera();
+                  }
+                  else if (status.isPermanentlyDenied) {
+                    _showErrorDialog().then((_) {
+                      openAppSettings().then((_) {
+                        Permission.speech.isGranted.then((isGranted) {
+                          if (isGranted != null && isGranted) {
+                            _initializeCamera();
+                          }
+                          else {
+                            Navigator.of(context).pop();
+                          }
+                        });
+                      });
+                    });
+                  }
+                  else {
+                    _showErrorDialog().then((value) => Navigator.of(context).pop());
+                  }
+                });
+              }
+              else {
+                Navigator.of(context).pop();
+              }
+            });
+          });
+        });
+      }
+      else {
+        _showErrorDialog().then((value) => Navigator.of(context).pop());
+      }
     });
   }
 
+  void _initializeCamera() {
+    _cameraController.initialize().then((_) {
+      _cameraController.setFlashMode(FlashMode.off).then((_) => setState(() => _isLoading = false))
+        .onError((_, __) => setState(() => _isLoading = false));
+    });
+  }
+
+  Future<void> _showErrorDialog({Widget title, Widget content, List<Widget> actions}) => showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: '',
+    pageBuilder: (_, __, ___) => AlertDialog(
+      title: title ?? const Text('Erro'),
+      content: content ?? const Text('É necessário aceitar todas as permissões antes de continuar'),
+      actions: actions ?? [
+        TextButton(
+          child: Text('OK'),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ],
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
     final size = MediaQuery.of(context).size;
     final tenPorcentPageSize = size.width * 0.1;
 
     return Scaffold(
       appBar: _appBar,
-      body: Stack(
+      body: _isLoading ? Center(
+        child: CircularProgressIndicator(),
+      ) : Stack(
         children: [
           Container(
             width: size.width,

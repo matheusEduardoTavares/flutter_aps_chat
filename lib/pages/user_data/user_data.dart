@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 class UserData extends StatefulWidget {
@@ -147,9 +148,21 @@ class _UserDataState extends State<UserData> {
                             });
                           }
                         }
+                        on PlatformException catch(e) {
+                          if (e.code == 'no_available_camera') {
+                            _showErrorDialog(
+                              message: 'A câmera do dispositivo não pode ser encontrada'
+                            );
+                          }
+                          else {
+                            _showErrorDialog(
+                              message: 'Ocorreu um erro ao abrir a câmera'
+                            );
+                          }
+                        }
                         catch (e) {
                           _showErrorDialog(
-                            message: 'Erro ao tirar ao capturar imagem'
+                            message: 'Ocorreu um erro ao abrir a câmera'
                           );
                         }
                       },
