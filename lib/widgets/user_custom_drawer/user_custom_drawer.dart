@@ -87,7 +87,9 @@ class _UserCustomDrawerState extends State<UserCustomDrawer> {
                               {'isUseDrawer': false,} : null, 
                           ).then((_) {
                             UserCustomDrawer.changePage(DetailsPages.homePage);
-                            Navigator.of(context).pop();
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              Navigator.of(context).pop();
+                            });
                           });
                         }
                       },

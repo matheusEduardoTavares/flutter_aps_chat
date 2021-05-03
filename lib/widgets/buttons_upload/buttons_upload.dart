@@ -1,6 +1,15 @@
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:flutter/material.dart';
 
+typedef AddImages = void Function(List<String>);
+
 class ButtonsUpload extends StatefulWidget {
+  const ButtonsUpload({
+    @required this.addImages,
+  });
+
+  final AddImages addImages;
+
   @override
   _ButtonsUploadState createState() => _ButtonsUploadState();
 }
@@ -20,7 +29,18 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
             size: 20,
           ),
           onPressed: () async {
-            
+            final imagesPath = await Navigator.of(context).pushNamed(
+              DetailsPages.cameraPage,
+              arguments: {
+                'addImages': widget.addImages,
+              }
+            );
+
+            final images = List<String>.from(imagesPath ?? []);
+
+            if (images != null && images.isNotEmpty) {
+              widget.addImages(imagesPath);
+            }
           }
         ),
         FloatingActionButton(

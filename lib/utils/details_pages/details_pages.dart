@@ -18,6 +18,7 @@ abstract class DetailsPages {
   static const userDataPage = '/userDataPage';
   static const chatDataPage = '/chatDataPage';
   static const imagePage = '/imagePage';
+  static const cameraPage = '/cameraPage';
 
   static final pages = <String, WidgetBuilder>{
     splashPage: (ctx) => SplashPage(),

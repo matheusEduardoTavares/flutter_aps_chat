@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:aps_chat/utils/check_internet_connection/check_internet_connection.dart';
 import 'package:aps_chat/utils/custom_dialogs/custom_dialogs.dart';
@@ -25,6 +26,7 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
+  final _cameraPaths = <String>[];
   var _isKeyboardOpen = false;
   KeyboardVisibilityNotification keyboardListener;
   String _message = '';
@@ -46,6 +48,12 @@ class _ChatPageState extends State<ChatPage> {
 
     _messageController = TextEditingController();
   }
+
+  void _addImages(List<String> newPaths) {
+    setState(() {
+      _cameraPaths.addAll(newPaths);
+    });
+  }
   
   Future<void> _showErrorDialog({Widget title, Widget content, List<Widget> actions}) => showGeneralDialog(
     context: context,
@@ -62,6 +70,30 @@ class _ChatPageState extends State<ChatPage> {
       ],
     ),
   );
+
+  Widget _buildImage(String path) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 5.0),
+      child: InkWell(
+        onTap: () async {
+          final isConfirmClose = await CustomDialogs.confirmationDialog(
+            content: const Text('Confirma a deleção desta imagem ?'),
+          );
+
+          if (isConfirmClose != null && isConfirmClose) {
+            setState(() {
+              _cameraPaths.removeAt(_cameraPaths.indexOf(path));
+            });
+          }
+        },
+        child: CircleAvatar(
+          backgroundImage: FileImage(
+            File(path),
+          ),
+        ),
+      ),
+    );
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -92,17 +124,18 @@ class _ChatPageState extends State<ChatPage> {
               if (!_isKeyboardOpen)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          //Todo: Colocar as imagens capturadas aqui
-                        ],
-                      ),
-                      ButtonsUpload()
-                    ],
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (_cameraPaths.isNotEmpty)
+                          ..._cameraPaths.map((img) => _buildImage(img)).toList(),
+                        ButtonsUpload(
+                          addImages: _addImages,
+                        )
+                      ],
+                    ),
                   ),
                 ),
               Row(

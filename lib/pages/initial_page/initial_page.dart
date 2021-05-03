@@ -1,3 +1,4 @@
+import 'package:aps_chat/pages/camera_page/camera_page.dart';
 import 'package:aps_chat/pages/chat_loading_stream/chat_loading_stream.dart';
 import 'package:aps_chat/pages/image_page/image_page.dart';
 import 'package:aps_chat/providers/theme_config_provider/theme_config_provider.dart';
@@ -5,6 +6,8 @@ import 'package:aps_chat/utils/colors_default/colors_default.dart';
 import 'package:aps_chat/utils/db_util.dart';
 import 'package:aps_chat/utils/navigator_config.dart';
 import 'package:aps_chat/utils/details_pages/details_pages.dart';
+import 'package:aps_chat/widgets/camera_utilities/camera_utilities.dart';
+import 'package:camera/camera.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +34,9 @@ class _InitialPageState extends State<InitialPage> {
         }
 
         Firebase.initializeApp().then((_) {
+          availableCameras().then((cameras) {
+            CameraUtilities.camera = cameras?.first;
+          });
           Navigator.of(ctx)
             .pushReplacementNamed(DetailsPages.authPage);
         });
@@ -77,6 +83,11 @@ class _InitialPageState extends State<InitialPage> {
                 builder: (ctx) => ImagePage(
                   user: user,
                 ),
+              );
+            }
+            else if (settings?.name == DetailsPages.cameraPage) {
+              return MaterialPageRoute(
+                builder: (ctx) => CameraPage(),
               );
             }
 
