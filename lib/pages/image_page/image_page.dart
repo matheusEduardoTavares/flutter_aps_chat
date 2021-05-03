@@ -27,7 +27,6 @@ class ImagePage extends StatelessWidget {
                 height: MediaQuery.of(context).size.height,
                 width: MediaQuery.of(context).size.width,
                 child: CachedNetworkImage(
-                  fit: BoxFit.cover,
                   imageUrl: url ?? user['imageUrl'],
                   placeholder: (_, __) {
                     return Center(
