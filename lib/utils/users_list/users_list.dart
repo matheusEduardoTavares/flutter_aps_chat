@@ -109,6 +109,7 @@ class _UsersListState extends State<UsersList> {
               ' em sua imagem / ícone ou fique pressionando no usuário desejado '
               'para adicioná-lo à lista e permitir a '
               'criação de um grupo (precisa selecionar pelo menos 2 usuários)'
+              '. Para enviar um e-mail basta selecionar ao menos um usuário'
             ),
           ),
         Expanded(
