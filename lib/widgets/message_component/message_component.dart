@@ -14,7 +14,9 @@ class MessageComponent extends StatefulWidget {
     @required this.isImage,
     @required this.createdAt,
     @required this.userId,
+    this.filename = '',
     this.isSystem = false,
+    this.isFile = false,
     this.createdBy,
   }) : super(key: key);
 
@@ -22,6 +24,8 @@ class MessageComponent extends StatefulWidget {
   final bool isImage;
   final bool belongsToMe;
   final bool isSystem;
+  final bool isFile;
+  final String filename;
   final Timestamp createdAt;
   final String userId;
   final String createdBy;
@@ -111,7 +115,37 @@ class _MessageComponentState extends State<MessageComponent> {
                 Container(
                   width: MediaQuery.of(context).size.width * (widget.isSystem ? 1.0 : 0.5),
                   padding: const EdgeInsets.all(15),
-                  child: widget.isImage ? GestureDetector(
+                  child: widget.isFile ? InkWell(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(
+                        DetailsPages.filePage,
+                        arguments: {
+                          'filename': widget.filename,
+                          'url': widget.content,
+                        }
+                      );
+                    },
+                    child: Column(
+                      children: [
+                        Icon(
+                          widget.filename.endsWith('.pdf') ? Icons.picture_as_pdf :
+                            Icons.file_copy,
+                          size: 80,
+                          color: widget.belongsToMe ? Theme.of(context).accentColor
+                            : Theme.of(context).primaryColor,
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          widget.filename,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.0,
+                          ),
+                          textAlign: TextAlign.center,
+                        )
+                      ],
+                    ),
+                  ) : (widget.isImage ? GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushNamed(
                         DetailsPages.imagePage,
@@ -153,7 +187,7 @@ class _MessageComponentState extends State<MessageComponent> {
                     ),
                     // textAlign: isSystem ? TextAlign.center : (belongsToMe ? TextAlign.right : TextAlign.left),
                     textAlign: TextAlign.center,
-                  ),
+                  )),
                 ),
               ],
             ),

@@ -31,6 +31,7 @@ class ButtonsUpload extends StatefulWidget {
 class _ButtonsUploadState extends State<ButtonsUpload> {
   final images = <Asset>[];
   var _isFirstClick = true;
+  var _isFirstFileClick = true;
   FilePickerResult _filePicker;
 
   Future<void> _showErrorDialog({Widget title, Widget content, List<Widget> actions}) => showGeneralDialog(
@@ -86,6 +87,17 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
     if (allImages != null && allImages.isNotEmpty) {
       widget.addGalleryImages?.call(allImages);
     }
+  }
+
+  Future<void> _addFile() async {
+    _filePicker = await FilePicker.platform.pickFiles(allowMultiple: true);
+
+    if(_filePicker != null) {
+      List<File> files = _filePicker.paths.map((path) => File(path)).toList();
+
+      widget?.addFiles(files);
+    }
+    return;
   }
 
   @override
@@ -186,14 +198,53 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
           ),
           onPressed: () async {
             widget.messageFocus?.unfocus();
-            
-            _filePicker = await FilePicker.platform.pickFiles(allowMultiple: true);
 
-            if(_filePicker != null) {
-              List<File> files = _filePicker.paths.map((path) => File(path)).toList();
+            final status = await Permission.storage.status;
 
-              widget?.addFiles(files);
+            if (status == PermissionStatus.granted) {
+              await _addFile();
+              return;
             }
+
+            if (_isFirstFileClick && status != PermissionStatus.granted) {
+              await Permission.storage.request();    
+            }
+
+            if (status == PermissionStatus.permanentlyDenied || status == PermissionStatus.denied) {
+              await _showErrorDialog(
+                content: const Text('É necessário ativar todas as permissões para prosseguir')
+              );
+
+              await openAppSettings();
+
+              final status = await Permission.storage.status;
+              if (status == PermissionStatus.granted) {
+                await _addFile();
+              }
+            }
+            else {
+              var isAccepted = false;
+              if (!_isFirstClick) {
+                await Permission.storage.request(); 
+
+                final newStatus = await Permission.storage.status;
+
+                if (newStatus == PermissionStatus.granted) {
+                  isAccepted = true;
+                  await _addFile();
+                }
+              }
+
+              if (!isAccepted) {
+                await _showErrorDialog(
+                  content: const Text('É necessário ativar todas as permissões para prosseguir')
+                );
+              }
+            }
+
+            setState(() {
+              _isFirstFileClick = false;
+            });
           }
         ),
       ],

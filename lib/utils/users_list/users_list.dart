@@ -101,7 +101,7 @@ class _UsersListState extends State<UsersList> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if (HomePage.allUsersWithoutMe.length <= 2)
+        if (HomePage.allUsersWithoutMe.length >= 1)
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Text(
@@ -183,6 +183,8 @@ class _UsersListState extends State<UsersList> {
                       'createdAt': Timestamp.now(),
                       'content': 'Esta conversa é privada, e por isso mais ninguém pode vê-la',
                       'isImage': false,
+                      'isFile': false,
+                      'filename': '',
                       'isSystem': true,
                       'userId': 'Global',
                       'createdBy': loggedUser.id,
@@ -263,6 +265,8 @@ class _UsersListState extends State<UsersList> {
                   'content': 'Esta conversa é apenas entre /${HomePage.loggedUser.id}/, '
                     '${_usersSelected.map((usSelected) => "/${usSelected.id}/").toList().join(", ")}',
                   'isImage': false,
+                  'isFile': false,
+                  'filename': '',
                   'isSystem': true,
                   'userId': 'Global',
                   'createdBy': loggedUser.id,

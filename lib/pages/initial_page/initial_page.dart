@@ -1,5 +1,6 @@
 import 'package:aps_chat/pages/camera_page/camera_page.dart';
 import 'package:aps_chat/pages/chat_loading_stream/chat_loading_stream.dart';
+import 'package:aps_chat/pages/file_page/file_page.dart';
 import 'package:aps_chat/pages/image_page/image_page.dart';
 import 'package:aps_chat/providers/theme_config_provider/theme_config_provider.dart';
 import 'package:aps_chat/utils/colors_default/colors_default.dart';
@@ -107,6 +108,19 @@ class _InitialPageState extends State<InitialPage> {
               return MaterialPageRoute(
                 builder: (ctx) => CameraPage(
                   isOnlyOneImage: isOnlyOneImage,
+                ),
+              );
+            }
+            else if (settings?.name == DetailsPages.filePage) {
+              final Map<String, dynamic> data = settings?.arguments;
+
+              final String url = data['url'] ?? false;
+              final String filename = data['filename'] ?? false;
+
+              return MaterialPageRoute(
+                builder: (ctx) => FilePage(
+                  url: url,
+                  filename: filename,
                 ),
               );
             }

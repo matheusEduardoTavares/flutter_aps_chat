@@ -12,6 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:aps_chat/pages/home_page/home_page.dart';
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 
+import 'package:path/path.dart' as path;
+
 class ChatPage extends StatefulWidget {
   const ChatPage({
     @required this.items,
@@ -143,7 +145,7 @@ class _ChatPageState extends State<ChatPage> {
       child: InkWell(
         onTap: () async {
           final isConfirmClose = await CustomDialogs.confirmationDialog(
-            content: const Text('Confirma a deleção deste arquivo ?'),
+            content: Text('Confirma a deleção do arquivo ${path.basename(file.path)}?'),
           );
 
           if (isConfirmClose != null && isConfirmClose) {
@@ -152,9 +154,22 @@ class _ChatPageState extends State<ChatPage> {
             });
           }
         },
-        child: CircleAvatar(
-          backgroundImage: FileImage(
-            file,
+        child: Container(
+          width: 60,
+          child: Column(
+            children: [
+              Icon(
+                Icons.file_copy,
+                size: 40,
+                color: Theme.of(context).accentColor,
+              ),
+              FittedBox(
+                child: Text(
+                  '${path.basename(file.path)}',
+                  style: TextStyle(color: Theme.of(context).accentColor)
+                )
+              ),
+            ],
           ),
         ),
       ),
@@ -186,7 +201,9 @@ class _ChatPageState extends State<ChatPage> {
           'userId': HomePage.loggedUser.id,
           'content': hasFilterMessage ? _message?.trim()?.substring(0, 1200) : _message?.trim(),
           'isImage': false,
+          'isFile': false,
           'isSystem': false,
+          'filename': '',
           'createdAt': Timestamp.now(),
           'createdBy': HomePage.loggedUser.id,
         });
@@ -212,7 +229,9 @@ class _ChatPageState extends State<ChatPage> {
           'userId': HomePage.loggedUser.id,
           'content': url,
           'isImage': true,
+          'isFile': false,
           'isSystem': false,
+          'filename': '',
           'createdAt': Timestamp.now(),
           'createdBy': HomePage.loggedUser.id,
         });
@@ -245,7 +264,9 @@ class _ChatPageState extends State<ChatPage> {
           'userId': HomePage.loggedUser.id,
           'content': url,
           'isImage': true,
+          'isFile': false,
           'isSystem': false,
+          'filename': '',
           'createdAt': Timestamp.now(),
           'createdBy': HomePage.loggedUser.id,
         });
@@ -258,11 +279,49 @@ class _ChatPageState extends State<ChatPage> {
         );
       }
 
+      for (var currentIndex = 0; currentIndex < _allFiles.length; currentIndex++) {
+        if (currentIndex == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Iniciando o envio dos arquivos para o servidor ...'),
+            ),
+          );
+        }
+
+        final filename = path.basename(_allFiles[currentIndex].path);
+
+        final ref = FirebaseStorage.instance.ref()
+          .child('files')
+          .child(filename);
+
+        await ref.putFile(_allFiles[currentIndex]);
+        final url = await ref.getDownloadURL();
+
+        await widget.chatCollection.add({
+          'userId': HomePage.loggedUser.id,
+          'content': url,
+          'isImage': false,
+          'isFile': true,
+          'filename': filename,
+          'isSystem': false,
+          'createdAt': Timestamp.now(),
+          'createdBy': HomePage.loggedUser.id,
+        });
+
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Arquivo ${currentIndex + 1} / ${_allFiles.length} enviado !!'),
+          ),
+        );
+      }
+
       setState(() {
         _message = '';
         _messageController.clear();
         _cameraPaths.clear();
         _filesGallery.clear();
+        _allFiles.clear();
       });
 
       final hasInternet = await CheckInternetConnection.hasInternetConnection();
@@ -272,7 +331,7 @@ class _ChatPageState extends State<ChatPage> {
           title: const Text('Sem conexão'),
           content: const Text('Você está sem conexão com a internet no momento.'
             ' Assim que possuir internet a mensagem será enviada, porém, todas as '
-            'fotos serão perdidas'
+            'fotos e arquivos serão perdidos'
           )
         );
       }
@@ -305,6 +364,8 @@ class _ChatPageState extends State<ChatPage> {
               userId: widget.items[index]['userId'],
               isImage: widget.items[index]['isImage'],
               isSystem: widget.items[index]['isSystem'],
+              isFile: widget.items[index]['isFile'],
+              filename: widget.items[index]['filename'],
               createdAt: widget.items[index]['createdAt'],
               createdBy: widget.items[index]['createdBy'],
             ),
@@ -344,8 +405,15 @@ class _ChatPageState extends State<ChatPage> {
                   children: [
                     Expanded(
                       child: TextFormField(
-                        onFieldSubmitted: (value) async {
-                          await _sendMessage();
+                        onFieldSubmitted: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty && _filesGallery.isEmpty && _allFiles.isEmpty ? 
+                          null : (value) async {
+                          _sendMessage();
+                          Timer(
+                            Duration(milliseconds: 300),
+                            () {
+                              _scrollController
+                                .jumpTo(_scrollController.position.minScrollExtent);
+                            });
                           _messageFocus.requestFocus();
                         },
                         decoration: InputDecoration(
@@ -371,8 +439,8 @@ class _ChatPageState extends State<ChatPage> {
                         Icons.send,
                         size: 30,
                       ),
-                      backgroundColor: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty && _filesGallery.isEmpty ? Colors.grey : null,
-                      onPressed: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty && _filesGallery.isEmpty ? null : () async {
+                      backgroundColor: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty && _filesGallery.isEmpty && _allFiles.isEmpty ? Colors.grey : null,
+                      onPressed: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty && _filesGallery.isEmpty && _allFiles.isEmpty ? null : () async {
                         await _sendMessage();
                       },
                     )

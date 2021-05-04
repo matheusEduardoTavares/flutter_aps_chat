@@ -55,6 +55,8 @@ class ChatsList extends StatelessWidget {
             'content': 'Este chat contém todos os usuários do sistema',
             'userId': 'Global',
             'isImage': false,
+            'isFile': false,
+            'filename': '',
             'isSystem': true,
             'createdAt': Timestamp.now(),
             'createdBy': 'Global',

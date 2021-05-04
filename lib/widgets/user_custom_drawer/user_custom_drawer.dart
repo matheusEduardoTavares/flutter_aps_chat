@@ -116,9 +116,11 @@ class _UserCustomDrawerState extends State<UserCustomDrawer> {
 
                         await _auth.signOut();
 
-                        setState(() {
-                          _isLoadingLogout = false;
-                        });
+                        if (mounted) {
+                          setState(() {
+                            _isLoadingLogout = false;
+                          });
+                        }
 
                         UserCustomDrawer.changePage(DetailsPages.homePage);
 
