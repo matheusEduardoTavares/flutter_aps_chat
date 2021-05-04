@@ -140,7 +140,7 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
           onPressed: () async {
             widget.messageFocus?.unfocus();
             
-            final status = await Permission.storage.status;
+            var status = await Permission.storage.status;
 
             if (status == PermissionStatus.granted) {
               await _getImagesGallery();
@@ -148,7 +148,7 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
             }
 
             if (_isFirstClick && status != PermissionStatus.granted) {
-              await Permission.storage.request();    
+              status = await Permission.storage.request();    
             }
 
             if (status == PermissionStatus.permanentlyDenied || status == PermissionStatus.denied) {
@@ -161,22 +161,29 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
               final status = await Permission.storage.status;
               if (status == PermissionStatus.granted) {
                 await _getImagesGallery();
+                return;
               }
             }
             else {
               var isAccepted = false;
+              var newStatus = await Permission.storage.status;
               if (!_isFirstClick) {
-                await Permission.storage.request(); 
-
-                final newStatus = await Permission.storage.status;
+                newStatus = await Permission.storage.request(); 
 
                 if (newStatus == PermissionStatus.granted) {
-                  isAccepted = true;
                   await _getImagesGallery();
+                  return;
                 }
               }
 
-              if (!isAccepted) {
+              newStatus = await Permission.storage.status;
+              if (newStatus == PermissionStatus.granted) {
+                await _getImagesGallery();
+                return;
+              }
+
+              newStatus = await Permission.storage.status;
+              if (!isAccepted && !(newStatus == PermissionStatus.granted)) {
                 await _showErrorDialog(
                   content: const Text('É necessário ativar todas as permissões para prosseguir')
                 );
@@ -199,7 +206,7 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
           onPressed: () async {
             widget.messageFocus?.unfocus();
 
-            final status = await Permission.storage.status;
+            var status = await Permission.storage.status;
 
             if (status == PermissionStatus.granted) {
               await _addFile();
@@ -209,6 +216,8 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
             if (_isFirstFileClick && status != PermissionStatus.granted) {
               await Permission.storage.request();    
             }
+
+            status = await Permission.storage.status;
 
             if (status == PermissionStatus.permanentlyDenied || status == PermissionStatus.denied) {
               await _showErrorDialog(
@@ -220,22 +229,29 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
               final status = await Permission.storage.status;
               if (status == PermissionStatus.granted) {
                 await _addFile();
+                return;
               }
             }
             else {
               var isAccepted = false;
+              var newStatus = await Permission.storage.status;
               if (!_isFirstClick) {
-                await Permission.storage.request(); 
-
-                final newStatus = await Permission.storage.status;
+                newStatus = await Permission.storage.request(); 
 
                 if (newStatus == PermissionStatus.granted) {
                   isAccepted = true;
                   await _addFile();
+                  return;
                 }
               }
 
-              if (!isAccepted) {
+              newStatus = await Permission.storage.status;
+              if (newStatus == PermissionStatus.granted) {
+                await _addFile();
+                return;
+              }
+
+              if (!isAccepted && !(newStatus == PermissionStatus.granted)) {
                 await _showErrorDialog(
                   content: const Text('É necessário ativar todas as permissões para prosseguir')
                 );
