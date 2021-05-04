@@ -1,6 +1,6 @@
 import 'package:aps_chat/models/details_page.dart';
-import 'package:aps_chat/utils/get_images/get_images.dart';
-import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:aps_chat/utils/asset_images/asset_images.dart';
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:aps_chat/widgets/opacity_request/opacity_request.dart';
 import 'package:flutter/material.dart';
 
@@ -8,7 +8,7 @@ class GlobalCustomDrawer extends StatefulWidget {
   static int _selectedIndex = 0;
 
   static void changePage(String newPage, [List<DetailsPage> pages]) {
-    final filterInPages = PagesConfigs.detailsPage;
+    final filterInPages = DetailsPages.detailsPage;
 
     var index = filterInPages.
       indexWhere((page) => page.goToNamedRoute == newPage);
@@ -27,7 +27,7 @@ class _GlobalCustomDrawerState extends State<GlobalCustomDrawer> {
 
   @override 
   Widget build(BuildContext context) {
-    final pagesItems = PagesConfigs.detailsPage;
+    final pagesItems = DetailsPages.detailsPage;
 
     return OpacityRequest(
       isLoading: _isLoadingLogout,
@@ -45,7 +45,7 @@ class _GlobalCustomDrawerState extends State<GlobalCustomDrawer> {
                   ),
                   const SizedBox(height: 20),
                   Image.asset(
-                    GetImages.chatImage,
+                    AssetImages.chatImage,
                     height: 94,
                   ),
                 ],

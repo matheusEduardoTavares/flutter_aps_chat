@@ -1,4 +1,5 @@
-import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:aps_chat/utils/check_internet_connection/check_internet_connection.dart';
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:aps_chat/utils/textformfields_validator/textformfields_validator.dart';
 import 'package:aps_chat/widgets/global_custom_drawer/global_custom_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -24,13 +25,13 @@ class _SignUpPageState extends State<SignUpPage> {
   var _showInvisiblePassword = true;
   var _isLoadingRequest = false;
 
-  Future<void> _showErrorDialog(bool isErrorMailAlreadyExists) => showGeneralDialog(
+  Future<void> _showErrorDialog({bool isErrorMailAlreadyExists, String title, Widget content}) => showGeneralDialog(
     context: context,
     barrierDismissible: true,
     barrierLabel: '',
     pageBuilder: (_, __, ___) => AlertDialog(
-      title: Text('Erro'),
-      content: Text(isErrorMailAlreadyExists ? 
+      title: Text(title ?? 'Erro'),
+      content: content ?? Text(isErrorMailAlreadyExists ? 
         'E-mail já está em uso. Por favor, use outro e-mail' : 'Ocorreu um erro'
         ', por favor, contate algum administrador'),
       actions: [
@@ -177,6 +178,24 @@ class _SignUpPageState extends State<SignUpPage> {
                           setState(() {
                             _isLoadingRequest = true;
                           });
+
+                          final hasInternet = await 
+                            CheckInternetConnection.hasInternetConnection();
+
+                          if (!hasInternet) {
+                            setState(() {
+                              _isLoadingRequest = false;
+                            });
+
+                            await _showErrorDialog(
+                              isErrorMailAlreadyExists: false,
+                              title: 'Sem conexão',
+                              content: const Text('Você está sem internet e por isso não pode criar conta')
+                            );
+
+                            return;
+                          }
+
                           final mail = _emailController.value.text.trim();
                           final passwordField = _passwordController.value.text;
                           final currentUser = await _auth.createUserWithEmailAndPassword(
@@ -202,14 +221,14 @@ class _SignUpPageState extends State<SignUpPage> {
                           await _showSuccessDialog();
 
                           Navigator.of(context)
-                            .pushReplacementNamed(PagesConfigs.homePage);
+                            .pushReplacementNamed(DetailsPages.homePage);
                         }
                         catch (e) {
                           if (e is FirebaseAuthException && e.code == 'email-already-in-use') {
-                            _showErrorDialog(true);
+                            _showErrorDialog(isErrorMailAlreadyExists: true);
                           }
                           else {
-                            _showErrorDialog(false);
+                            _showErrorDialog(isErrorMailAlreadyExists: false);
                           }
                         }
                         finally {
@@ -230,9 +249,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 child: TextButton(
                   child: const Text('Já possui conta ? Faça o login'),
                   onPressed: () {
-                    print('clicado em fazer login');
-                    GlobalCustomDrawer.changePage(PagesConfigs.loginPage);
-                    Navigator.of(context).pushReplacementNamed(PagesConfigs.loginPage);
+                    GlobalCustomDrawer.changePage(DetailsPages.loginPage);
+                    Navigator.of(context).pushReplacementNamed(DetailsPages.loginPage);
                   },
                 ),
               ),

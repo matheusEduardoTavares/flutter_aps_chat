@@ -2,8 +2,8 @@ import 'package:aps_chat/pages/chat_page/chat_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class CurrentChat extends StatefulWidget {
-  const CurrentChat({
+class ChatLoadingStream extends StatefulWidget {
+  const ChatLoadingStream({
     @required this.docChatName,
     this.docChatStream,
   });
@@ -12,24 +12,24 @@ class CurrentChat extends StatefulWidget {
   final String docChatStream;
 
   @override
-  _CurrentChatState createState() => _CurrentChatState();
+  _ChatLoadingStreamState createState() => _ChatLoadingStreamState();
 }
 
-class _CurrentChatState extends State<CurrentChat> {
+class _ChatLoadingStreamState extends State<ChatLoadingStream> {
   CollectionReference _chatCollection;
 
   @override 
   void initState() {
     super.initState();
 
-    _chatCollection = FirebaseFirestore.instance.collection('allChats').doc(widget.docChatName)
+    _chatCollection = FirebaseFirestore.instance.collection('allChats').doc(widget.docChatStream)
       .collection('chat');
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: _chatCollection.snapshots(),
+      stream: _chatCollection.orderBy('createdAt', descending: true).snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
@@ -39,11 +39,13 @@ class _CurrentChatState extends State<CurrentChat> {
 
         final QuerySnapshot data = snapshot.data ?? [];
         final List<QueryDocumentSnapshot> texts = data?.docs ?? [];
+
+        var finalChatName = widget.docChatName;
         
         return Scaffold(
-          appBar: AppBar(
-            title: Text(widget.docChatName),
-          ),
+          appBar: MediaQuery.of(context).orientation == Orientation.portrait ? AppBar(
+            title: Text(finalChatName),
+          ) : null,
           body: ChatPage(
             items: texts,
             chatCollection: _chatCollection,

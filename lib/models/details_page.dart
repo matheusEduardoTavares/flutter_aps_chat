@@ -6,6 +6,7 @@ class DetailsPage {
     this.leading,
     this.title,
     this.leadingData,
+    this.isPushReplacement,
   });
 
   final String name;
@@ -13,4 +14,5 @@ class DetailsPage {
   final Widget leading;
   final Widget title;
   final IconData leadingData;
+  final bool isPushReplacement;
 }

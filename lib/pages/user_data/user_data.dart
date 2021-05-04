@@ -1,15 +1,23 @@
 import 'dart:io';
 
 import 'package:aps_chat/pages/home_page/home_page.dart';
+import 'package:aps_chat/utils/check_internet_connection/check_internet_connection.dart';
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:aps_chat/utils/textformfields_validator/textformfields_validator.dart';
 import 'package:aps_chat/widgets/user_custom_drawer/user_custom_drawer.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter/services.dart';
 
 class UserData extends StatefulWidget {
+  const UserData({
+    this.isUseDrawer = false,
+  });
+
+  final bool isUseDrawer;
+
   @override
   _UserDataState createState() => _UserDataState();
 }
@@ -26,7 +34,6 @@ class _UserDataState extends State<UserData> {
   final _formKey = GlobalKey<FormState>();
   var _isLoadingRequest = false;
   var _isAddImage = false;
-  final _getImage = ImagePicker();
   String _selectedImagePath;
   File _fileWithImage;
   var _valueChanged = false;
@@ -39,12 +46,12 @@ class _UserDataState extends State<UserData> {
     _emailController = TextEditingController(text: HomePage.loggedUser.get('email'));
   }
 
-  Future<void> _showErrorDialog({bool isErrorMailAlreadyExists, String message}) => showGeneralDialog(
+  Future<void> _showErrorDialog({bool isErrorMailAlreadyExists, String message, String title}) => showGeneralDialog(
     context: context,
     barrierDismissible: true,
     barrierLabel: '',
     pageBuilder: (_, __, ___) => AlertDialog(
-      title: Text('Erro'),
+      title: Text(title ?? 'Erro'),
       content: Text(message ?? (isErrorMailAlreadyExists ? 
         'E-mail já está em uso. Por favor, use outro e-mail' : 'Ocorreu um erro'
         ' ao atualizar os dados, por favor, contate algum administrador')),
@@ -102,13 +109,61 @@ class _UserDataState extends State<UserData> {
   //   );
   // }
 
+  void _addImage(List<String> paths) {
+    setState(() {
+      _selectedImagePath = paths.first;
+    });
+  }
+
+  Future<void> _takeImage() async {
+    try {
+      final imagesPath = await Navigator.of(context).pushNamed(
+        DetailsPages.cameraPage,
+        arguments: {
+          'addImages': _addImage,
+          'isOnlyOneImage': true,
+        }
+      );
+
+      final images = List<String>.from(imagesPath ?? []);
+
+      if (images != null && images.isNotEmpty) {
+        setState(() {
+          _addImage(images);
+          _valueChanged = true;
+          _fileWithImage = File(
+            _selectedImagePath,
+          );
+          _isAddImage = true;
+        });
+      }
+    }
+    on PlatformException catch(e) {
+      if (e.code == 'no_available_camera') {
+        _showErrorDialog(
+          message: 'A câmera do dispositivo não pode ser encontrada'
+        );
+      }
+      else {
+        _showErrorDialog(
+          message: 'Ocorreu um erro ao abrir a câmera'
+        );
+      }
+    }
+    catch (e) {
+      _showErrorDialog(
+        message: 'Ocorreu um erro ao abrir a câmera'
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Atualizar dados'),
       ),
-      drawer: UserCustomDrawer(),
+      drawer: widget.isUseDrawer ? UserCustomDrawer() : null,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Form(
@@ -122,30 +177,7 @@ class _UserDataState extends State<UserData> {
                       const Text('Clique no ícone / imagem para trocar a foto'),
                     const SizedBox(height: 10),
                     _hasErroGetImage ? InkWell(
-                      onTap: () async {
-                        try {
-                          final image = await _getImage.getImage(
-                            source: ImageSource.camera,
-                            imageQuality: 50,
-                          );
-
-                          if (image != null) {
-                            setState(() {
-                              _valueChanged = true;
-                              _selectedImagePath = image.path;
-                              _fileWithImage = File(
-                                _selectedImagePath,
-                              );
-                              _isAddImage = true;
-                            });
-                          }
-                        }
-                        catch (e) {
-                          _showErrorDialog(
-                            message: 'Erro ao tirar ao capturar imagem'
-                          );
-                        }
-                      },
+                      onTap: _takeImage,
                       child: Padding(
                         padding: const EdgeInsets.only(top: 10.0),
                         child: Container(
@@ -169,16 +201,21 @@ class _UserDataState extends State<UserData> {
                               ),
                         ),
                       ),
-                    ) : CircleAvatar(
-                      radius: 100,
-                      backgroundImage: NetworkImage(
-                      _user?.photoURL ?? '',
+                    ) : InkWell(
+                      onTap: _takeImage,
+                      child: CircleAvatar(
+                        radius: 100,
+                        backgroundImage: _fileWithImage != null ? FileImage(
+                          _fileWithImage,
+                        ) : NetworkImage(
+                        _user?.photoURL ?? '',
+                        ),
+                        onBackgroundImageError: (_, __) {
+                          setState(() {
+                            _hasErroGetImage = true;
+                          });
+                        },
                       ),
-                      onBackgroundImageError: (_, __) {
-                        setState(() {
-                          _hasErroGetImage = true;
-                        });
-                      },
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
@@ -228,6 +265,24 @@ class _UserDataState extends State<UserData> {
                                 setState(() {
                                   _isLoadingRequest = true;
                                 });
+
+                                final hasInternet = await 
+                                  CheckInternetConnection.hasInternetConnection();
+
+                                if (!hasInternet) {
+                                  setState(() {
+                                    _isLoadingRequest = false;
+                                  });
+
+                                  await _showErrorDialog(
+                                    isErrorMailAlreadyExists: false,
+                                    title: 'Sem conexão',
+                                    message: 'Você está sem internet e por isso não pode atualizar os dados'
+                                  );
+
+                                  return;
+                                }
+
                                 final mail = _emailController.value.text.trim();
                                 final name = _nameController.value.text.trim();
 
@@ -260,7 +315,7 @@ class _UserDataState extends State<UserData> {
                                 if (_isAddImage) {
                                   final ref = FirebaseStorage.instance.ref()
                                     .child('images_profile')
-                                    .child('${_user.uid}.jpg');
+                                    .child(_selectedImagePath);
 
                                   await ref.putFile(_fileWithImage);
                                   final url = await ref.getDownloadURL();

@@ -1,11 +1,19 @@
-import 'package:aps_chat/pages/current_chat/current_chat.dart';
+import 'package:aps_chat/pages/camera_page/camera_page.dart';
+import 'package:aps_chat/pages/chat_loading_stream/chat_loading_stream.dart';
+import 'package:aps_chat/pages/file_page/file_page.dart';
+import 'package:aps_chat/pages/image_page/image_page.dart';
 import 'package:aps_chat/providers/theme_config_provider/theme_config_provider.dart';
 import 'package:aps_chat/utils/colors_default/colors_default.dart';
 import 'package:aps_chat/utils/db_util.dart';
 import 'package:aps_chat/utils/navigator_config.dart';
-import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
+import 'package:aps_chat/widgets/camera_utilities/camera_utilities.dart';
+import 'package:camera/camera.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 class InitialPage extends StatefulWidget {
 
@@ -29,8 +37,11 @@ class _InitialPageState extends State<InitialPage> {
         }
 
         Firebase.initializeApp().then((_) {
+          availableCameras().then((cameras) {
+            CameraUtilities.camera = cameras?.first;
+          });
           Navigator.of(ctx)
-            .pushReplacementNamed(PagesConfigs.authPage);
+            .pushReplacementNamed(DetailsPages.authPage);
         });
       });
     });
@@ -38,6 +49,7 @@ class _InitialPageState extends State<InitialPage> {
 
   @override
   Widget build(BuildContext context) {
+    Intl.defaultLocale = 'pt_BR';
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<ThemeConfigProvider>(
@@ -49,20 +61,66 @@ class _InitialPageState extends State<InitialPage> {
         final brightness = Provider.of<ThemeConfigProvider>(ctx).appBrightness;
         return MaterialApp(
           title: 'ProjectComplete',
-          initialRoute: PagesConfigs.splashPage,
-          routes: PagesConfigs.pages,
+          initialRoute: DetailsPages.splashPage,
+          routes: DetailsPages.pages,
           navigatorKey: NavigatorConfig.navKey,
+          localizationsDelegates: [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate
+          ],
+          supportedLocales: [
+            const Locale('pt', 'BR')
+          ],
           onGenerateRoute: (settings) {
-            if (settings?.name == PagesConfigs.chatDataPage) {
+            if (settings?.name == DetailsPages.chatDataPage) {
               final Map<String, dynamic> data = settings?.arguments;
 
               final docChatName = data['docChatName'];
               final docChatStream = data['docChatStream'];
 
               return MaterialPageRoute(
-                builder: (ctx) => CurrentChat(
+                builder: (ctx) => ChatLoadingStream(
                   docChatName: docChatName,
                   docChatStream: docChatStream,
+                ),
+              );
+            }
+            else if (settings?.name == DetailsPages.imagePage) {
+              final Map<String, dynamic> data = settings?.arguments;
+
+              final QueryDocumentSnapshot user = data['user'];
+              final String url = data['url'];
+              final String nameAppBar = data['nameAppBar'];
+
+              return MaterialPageRoute(
+                builder: (ctx) => ImagePage(
+                  user: user,
+                  url: url,
+                  nameAppBar: nameAppBar,
+                ),
+              );
+            }
+            else if (settings?.name == DetailsPages.cameraPage) {
+              final Map<String, dynamic> data = settings?.arguments;
+
+              final bool isOnlyOneImage = data['isOnlyOneImage'] ?? false;
+
+              return MaterialPageRoute(
+                builder: (ctx) => CameraPage(
+                  isOnlyOneImage: isOnlyOneImage,
+                ),
+              );
+            }
+            else if (settings?.name == DetailsPages.filePage) {
+              final Map<String, dynamic> data = settings?.arguments;
+
+              final String url = data['url'] ?? false;
+              final String filename = data['filename'] ?? false;
+
+              return MaterialPageRoute(
+                builder: (ctx) => FilePage(
+                  url: url,
+                  filename: filename,
                 ),
               );
             }

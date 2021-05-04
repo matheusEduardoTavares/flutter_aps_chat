@@ -1,4 +1,5 @@
-import 'package:aps_chat/utils/pages_configs/pages_configs.dart';
+import 'package:aps_chat/utils/check_internet_connection/check_internet_connection.dart';
+import 'package:aps_chat/utils/details_pages/details_pages.dart';
 import 'package:aps_chat/utils/textformfields_validator/textformfields_validator.dart';
 import 'package:aps_chat/widgets/global_custom_drawer/global_custom_drawer.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,13 +20,13 @@ class _LoginPageState extends State<LoginPage> {
   var _showInvisiblePassword = true;
   var _isLoadingRequest = false;
 
-  Future<void> _showErrorDialog(bool isErrorCredentials) => showGeneralDialog(
+  Future<void> _showErrorDialog({bool isErrorCredentials, String title, Widget content}) => showGeneralDialog(
     context: context,
     barrierDismissible: true,
     barrierLabel: '',
     pageBuilder: (_, __, ___) => AlertDialog(
-      title: Text('Erro'),
-      content: Text(isErrorCredentials ? 
+      title: Text(title ?? 'Erro'),
+      content: content ?? Text(isErrorCredentials ? 
         'E-mail e ou senha inválidos' : 'Ocorreu um erro'
         ', por favor, contate algum administrador'),
       actions: [
@@ -123,6 +124,23 @@ class _LoginPageState extends State<LoginPage> {
                         setState(() {
                           _isLoadingRequest = true;
                         });
+
+                        final hasInternet = await 
+                          CheckInternetConnection.hasInternetConnection();
+
+                        if (!hasInternet) {
+                          setState(() {
+                            _isLoadingRequest = false;
+                          });
+
+                          await _showErrorDialog(
+                            isErrorCredentials: false,
+                            title: 'Sem conexão',
+                            content: const Text('Você está sem internet e por isso não pode realizar login')
+                          );
+
+                          return;
+                        }
                         
                         await _auth.signInWithEmailAndPassword(
                           email: _emailController.value.text.trim(), 
@@ -130,10 +148,10 @@ class _LoginPageState extends State<LoginPage> {
                         );
                       }
                       on FirebaseAuthException catch (_) {
-                        _showErrorDialog(true);
+                        _showErrorDialog(isErrorCredentials: true);
                       }
                       catch (_) {
-                        _showErrorDialog(false);
+                        _showErrorDialog(isErrorCredentials: false);
                       }
                       finally {
                         if (mounted) {
@@ -152,9 +170,8 @@ class _LoginPageState extends State<LoginPage> {
                 child: TextButton(
                   child: const Text('Ainda não possui conta ? Crie uma conta'),
                   onPressed: () {
-                    print('clicado em criar conta');
-                    GlobalCustomDrawer.changePage(PagesConfigs.signUpPage);
-                    Navigator.of(context).pushReplacementNamed(PagesConfigs.signUpPage);
+                    GlobalCustomDrawer.changePage(DetailsPages.signUpPage);
+                    Navigator.of(context).pushReplacementNamed(DetailsPages.signUpPage);
                   },
                 ),
               ),
