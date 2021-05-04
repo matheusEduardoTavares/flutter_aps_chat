@@ -213,7 +213,15 @@ class _ChatPageState extends State<ChatPage> {
         if (currentIndex == 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Iniciando o envio das imagens capturadas para o servidor ...'),
+              backgroundColor: Theme.of(context).primaryColor,
+              content: Text('Iniciando o envio das imagens capturadas para o servidor ...', style: TextStyle(color: Colors.white)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0)
+              ),
+              padding: const EdgeInsets.all(10.0),
+              elevation: 5,
+              width: MediaQuery.of(context).size.width * 0.8,
+              behavior: SnackBarBehavior.floating,
             ),
           );
         }
@@ -239,7 +247,15 @@ class _ChatPageState extends State<ChatPage> {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Imagem capturada ${currentIndex + 1} / ${_cameraPaths.length} enviada !!'),
+            backgroundColor: Theme.of(context).primaryColor,
+            content: Text('Imagem capturada ${currentIndex + 1} / ${_cameraPaths.length} enviada !!', style: TextStyle(color: Colors.white)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0)
+            ),
+            padding: const EdgeInsets.all(10.0),
+            elevation: 5,
+            width: MediaQuery.of(context).size.width * 0.8,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -248,7 +264,15 @@ class _ChatPageState extends State<ChatPage> {
         if (currentIndex == 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Iniciando o envio das imagens da galeria para o servidor ...'),
+              backgroundColor: Theme.of(context).primaryColor,
+              content: Text('Iniciando o envio das imagens da galeria para o servidor ...', style: TextStyle(color: Colors.white)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0)
+              ),
+              padding: const EdgeInsets.all(10.0),
+              elevation: 5,
+              width: MediaQuery.of(context).size.width * 0.8,
+              behavior: SnackBarBehavior.floating,
             ),
           );
         }
@@ -274,7 +298,15 @@ class _ChatPageState extends State<ChatPage> {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Imagem da galeria ${currentIndex + 1} / ${_filesGallery.length} enviada !!'),
+            backgroundColor: Theme.of(context).primaryColor,
+            content: Text('Imagem da galeria ${currentIndex + 1} / ${_filesGallery.length} enviada !!', style: TextStyle(color: Colors.white)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0)
+            ),
+            padding: const EdgeInsets.all(10.0),
+            elevation: 5,
+            width: MediaQuery.of(context).size.width * 0.8,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -283,7 +315,15 @@ class _ChatPageState extends State<ChatPage> {
         if (currentIndex == 0) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Iniciando o envio dos arquivos para o servidor ...'),
+              backgroundColor: Theme.of(context).primaryColor,
+              content: const Text('Iniciando o envio dos arquivos para o servidor ...', style: TextStyle(color: Colors.white)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0)
+              ),
+              padding: const EdgeInsets.all(10.0),
+              elevation: 5,
+              width: MediaQuery.of(context).size.width * 0.8,
+              behavior: SnackBarBehavior.floating,
             ),
           );
         }
@@ -311,7 +351,15 @@ class _ChatPageState extends State<ChatPage> {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Arquivo ${currentIndex + 1} / ${_allFiles.length} enviado !!'),
+            backgroundColor: Theme.of(context).primaryColor,
+            content: Text('Arquivo ${currentIndex + 1} / ${_allFiles.length} enviado !!', style: TextStyle(color: Colors.white)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20.0),
+            ),
+            padding: const EdgeInsets.all(10.0),
+            elevation: 5,
+            width: MediaQuery.of(context).size.width * 0.8,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
