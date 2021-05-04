@@ -115,6 +115,48 @@ class _UserDataState extends State<UserData> {
     });
   }
 
+  Future<void> _takeImage() async {
+    try {
+      final imagesPath = await Navigator.of(context).pushNamed(
+        DetailsPages.cameraPage,
+        arguments: {
+          'addImages': _addImage,
+          'isOnlyOneImage': true,
+        }
+      );
+
+      final images = List<String>.from(imagesPath ?? []);
+
+      if (images != null && images.isNotEmpty) {
+        setState(() {
+          _addImage(images);
+          _valueChanged = true;
+          _fileWithImage = File(
+            _selectedImagePath,
+          );
+          _isAddImage = true;
+        });
+      }
+    }
+    on PlatformException catch(e) {
+      if (e.code == 'no_available_camera') {
+        _showErrorDialog(
+          message: 'A câmera do dispositivo não pode ser encontrada'
+        );
+      }
+      else {
+        _showErrorDialog(
+          message: 'Ocorreu um erro ao abrir a câmera'
+        );
+      }
+    }
+    catch (e) {
+      _showErrorDialog(
+        message: 'Ocorreu um erro ao abrir a câmera'
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,47 +177,7 @@ class _UserDataState extends State<UserData> {
                       const Text('Clique no ícone / imagem para trocar a foto'),
                     const SizedBox(height: 10),
                     _hasErroGetImage ? InkWell(
-                      onTap: () async {
-                        try {
-                          final imagesPath = await Navigator.of(context).pushNamed(
-                            DetailsPages.cameraPage,
-                            arguments: {
-                              'addImages': _addImage,
-                              'isOnlyOneImage': true,
-                            }
-                          );
-
-                          final images = List<String>.from(imagesPath ?? []);
-
-                          if (images != null && images.isNotEmpty) {
-                            setState(() {
-                              _addImage(images);
-                              _valueChanged = true;
-                              _fileWithImage = File(
-                                _selectedImagePath,
-                              );
-                              _isAddImage = true;
-                            });
-                          }
-                        }
-                        on PlatformException catch(e) {
-                          if (e.code == 'no_available_camera') {
-                            _showErrorDialog(
-                              message: 'A câmera do dispositivo não pode ser encontrada'
-                            );
-                          }
-                          else {
-                            _showErrorDialog(
-                              message: 'Ocorreu um erro ao abrir a câmera'
-                            );
-                          }
-                        }
-                        catch (e) {
-                          _showErrorDialog(
-                            message: 'Ocorreu um erro ao abrir a câmera'
-                          );
-                        }
-                      },
+                      onTap: _takeImage,
                       child: Padding(
                         padding: const EdgeInsets.only(top: 10.0),
                         child: Container(
@@ -199,16 +201,21 @@ class _UserDataState extends State<UserData> {
                               ),
                         ),
                       ),
-                    ) : CircleAvatar(
-                      radius: 100,
-                      backgroundImage: NetworkImage(
-                      _user?.photoURL ?? '',
+                    ) : InkWell(
+                      onTap: _takeImage,
+                      child: CircleAvatar(
+                        radius: 100,
+                        backgroundImage: _fileWithImage != null ? FileImage(
+                          _fileWithImage,
+                        ) : NetworkImage(
+                        _user?.photoURL ?? '',
+                        ),
+                        onBackgroundImageError: (_, __) {
+                          setState(() {
+                            _hasErroGetImage = true;
+                          });
+                        },
                       ),
-                      onBackgroundImageError: (_, __) {
-                        setState(() {
-                          _hasErroGetImage = true;
-                        });
-                      },
                     ),
                     const SizedBox(height: 20),
                     TextFormField(

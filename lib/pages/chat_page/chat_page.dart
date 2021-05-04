@@ -29,6 +29,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final _cameraPaths = <String>[];
   final _filesGallery = <File>[];
+  final _allFiles = <File>[];
   var _isKeyboardOpen = false;
   KeyboardVisibilityNotification keyboardListener;
   String _message = '';
@@ -63,6 +64,12 @@ class _ChatPageState extends State<ChatPage> {
   void _addGalleryImages(List<File> newFiles) {
     setState(() {
       _filesGallery.addAll(newFiles);
+    });
+
+  }
+  void _addFiles(List<File> newFiles) {
+    setState(() {
+      _allFiles.addAll(newFiles);
     });
   }
   
@@ -129,6 +136,158 @@ class _ChatPageState extends State<ChatPage> {
       ),
     );
   }
+
+  Widget _buildAllFiles(File file) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 5.0),
+      child: InkWell(
+        onTap: () async {
+          final isConfirmClose = await CustomDialogs.confirmationDialog(
+            content: const Text('Confirma a deleção deste arquivo ?'),
+          );
+
+          if (isConfirmClose != null && isConfirmClose) {
+            setState(() {
+              _allFiles.removeAt(_allFiles.indexOf(file));
+            });
+          }
+        },
+        child: CircleAvatar(
+          backgroundImage: FileImage(
+            file,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _sendMessage() async {
+    bool hasFilterMessage = false;
+    try {
+      if (_message.length > 1200) {
+        final isConfirmContinue = await CustomDialogs.confirmationDialog(
+          title: const Text('Aviso de perda de informações'),
+          content: const Text(
+            'O texto digitado é muito grande. O limite são 1200 caracteres.'
+            ' Confirme se deseja enviar a mensagem mesmo assim. '
+            'Será enviado apenas os primeiros 1200 caracteres'
+          ),
+        );
+
+        if (isConfirmContinue == null || !isConfirmContinue) {
+          return;
+        }
+
+        hasFilterMessage = true;
+      }
+
+      if (_message?.trim()?.isNotEmpty ?? false) {
+        widget.chatCollection.add({
+          'userId': HomePage.loggedUser.id,
+          'content': hasFilterMessage ? _message?.trim()?.substring(0, 1200) : _message?.trim(),
+          'isImage': false,
+          'isSystem': false,
+          'createdAt': Timestamp.now(),
+          'createdBy': HomePage.loggedUser.id,
+        });
+      }
+
+      for (var currentIndex = 0; currentIndex < _cameraPaths.length; currentIndex++) {
+        if (currentIndex == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Iniciando o envio das imagens capturadas para o servidor ...'),
+            ),
+          );
+        }
+
+        final ref = FirebaseStorage.instance.ref()
+          .child('images_chat_take')
+          .child(_cameraPaths[currentIndex]);
+
+        await ref.putFile(File(_cameraPaths[currentIndex]));
+        final url = await ref.getDownloadURL();
+
+        await widget.chatCollection.add({
+          'userId': HomePage.loggedUser.id,
+          'content': url,
+          'isImage': true,
+          'isSystem': false,
+          'createdAt': Timestamp.now(),
+          'createdBy': HomePage.loggedUser.id,
+        });
+
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Imagem capturada ${currentIndex + 1} / ${_cameraPaths.length} enviada !!'),
+          ),
+        );
+      }
+
+      for (var currentIndex = 0; currentIndex < _filesGallery.length; currentIndex++) {
+        if (currentIndex == 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Iniciando o envio das imagens da galeria para o servidor ...'),
+            ),
+          );
+        }
+
+        final ref = FirebaseStorage.instance.ref()
+          .child('images_chat_gallery')
+          .child(_filesGallery[currentIndex].path);
+
+        await ref.putFile(_filesGallery[currentIndex]);
+        final url = await ref.getDownloadURL();
+
+        await widget.chatCollection.add({
+          'userId': HomePage.loggedUser.id,
+          'content': url,
+          'isImage': true,
+          'isSystem': false,
+          'createdAt': Timestamp.now(),
+          'createdBy': HomePage.loggedUser.id,
+        });
+
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Imagem da galeria ${currentIndex + 1} / ${_filesGallery.length} enviada !!'),
+          ),
+        );
+      }
+
+      setState(() {
+        _message = '';
+        _messageController.clear();
+        _cameraPaths.clear();
+        _filesGallery.clear();
+      });
+
+      final hasInternet = await CheckInternetConnection.hasInternetConnection();
+
+      if (!hasInternet) {
+        _showErrorDialog(
+          title: const Text('Sem conexão'),
+          content: const Text('Você está sem conexão com a internet no momento.'
+            ' Assim que possuir internet a mensagem será enviada, porém, todas as '
+            'fotos serão perdidas'
+          )
+        );
+      }
+
+      Timer(
+        Duration(milliseconds: 300),
+        () => _scrollController
+            .jumpTo(_scrollController.position.minScrollExtent));
+
+      // _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: Duration(seconds: 2), curve: Curves.fastOutSlowIn);  
+    }
+    catch (_) {
+      _showErrorDialog();
+    }
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -168,172 +327,57 @@ class _ChatPageState extends State<ChatPage> {
                           ..._cameraPaths.map((img) => _buildImage(img)).toList(),
                         if (_filesGallery.isNotEmpty)
                           ..._filesGallery.map((img) => _buildGalleryImage(img)).toList(),
+                        if (_allFiles.isNotEmpty)
+                          ..._allFiles.map((img) => _buildAllFiles(img)).toList(),
                         ButtonsUpload(
                           addImages: _addImages,
                           messageFocus: _messageFocus,
                           addGalleryImages: _addGalleryImages,
+                          addFiles: _addFiles,
                         )
                       ],
                     ),
                   ),
                 ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      decoration: InputDecoration(
-                        labelText: 'Digite uma mensagem',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
+              Form(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        onFieldSubmitted: (value) async {
+                          await _sendMessage();
+                          _messageFocus.requestFocus();
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Digite uma mensagem',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
                         ),
+                        focusNode: _messageFocus,
+                        controller: _messageController,
+                        textInputAction: TextInputAction.send,
+                        textCapitalization: TextCapitalization.sentences,
+                        onChanged: (value) {
+                          setState(() {
+                            _message = value;
+                          });
+                        },
                       ),
-                      focusNode: _messageFocus,
-                      controller: _messageController,
-                      textInputAction: TextInputAction.send,
-                      textCapitalization: TextCapitalization.sentences,
-                      onChanged: (value) {
-                        setState(() {
-                          _message = value;
-                        });
+                    ),
+                    const SizedBox(width: 10),
+                    FloatingActionButton(
+                      child: const Icon(
+                        Icons.send,
+                        size: 30,
+                      ),
+                      backgroundColor: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty && _filesGallery.isEmpty ? Colors.grey : null,
+                      onPressed: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty && _filesGallery.isEmpty ? null : () async {
+                        await _sendMessage();
                       },
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  FloatingActionButton(
-                    child: const Icon(
-                      Icons.send,
-                      size: 30,
-                    ),
-                    backgroundColor: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty && _filesGallery.isEmpty ? Colors.grey : null,
-                    onPressed: (_message?.trim()?.isEmpty ?? true) && _cameraPaths.isEmpty && _filesGallery.isEmpty ? null : () async {
-                      bool hasFilterMessage = false;
-                      try {
-                        if (_message.length > 1200) {
-                          final isConfirmContinue = await CustomDialogs.confirmationDialog(
-                            title: const Text('Aviso de perda de informações'),
-                            content: const Text(
-                              'O texto digitado é muito grande. O limite são 1200 caracteres.'
-                              ' Confirme se deseja enviar a mensagem mesmo assim. '
-                              'Será enviado apenas os primeiros 1200 caracteres'
-                            ),
-                          );
-
-                          if (isConfirmContinue == null || !isConfirmContinue) {
-                            return;
-                          }
-
-                          hasFilterMessage = true;
-                        }
-
-                        if (_message?.trim()?.isNotEmpty ?? false) {
-                          widget.chatCollection.add({
-                            'userId': HomePage.loggedUser.id,
-                            'content': hasFilterMessage ? _message?.trim()?.substring(0, 1200) : _message?.trim(),
-                            'isImage': false,
-                            'isSystem': false,
-                            'createdAt': Timestamp.now(),
-                            'createdBy': HomePage.loggedUser.id,
-                          });
-                        }
-
-                        for (var currentIndex = 0; currentIndex < _cameraPaths.length; currentIndex++) {
-                          if (currentIndex == 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Iniciando o envio das imagens capturadas para o servidor ...'),
-                              ),
-                            );
-                          }
-
-                          final ref = FirebaseStorage.instance.ref()
-                            .child('images_chat_take')
-                            .child(_cameraPaths[currentIndex]);
-
-                          await ref.putFile(File(_cameraPaths[currentIndex]));
-                          final url = await ref.getDownloadURL();
-
-                          await widget.chatCollection.add({
-                            'userId': HomePage.loggedUser.id,
-                            'content': url,
-                            'isImage': true,
-                            'isSystem': false,
-                            'createdAt': Timestamp.now(),
-                            'createdBy': HomePage.loggedUser.id,
-                          });
-
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Imagem capturada ${currentIndex + 1} / ${_cameraPaths.length} enviada !!'),
-                            ),
-                          );
-                        }
-
-                        for (var currentIndex = 0; currentIndex < _filesGallery.length; currentIndex++) {
-                          if (currentIndex == 0) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Iniciando o envio das imagens da galeria para o servidor ...'),
-                              ),
-                            );
-                          }
-
-                          final ref = FirebaseStorage.instance.ref()
-                            .child('images_chat_gallery')
-                            .child(_filesGallery[currentIndex].path);
-
-                          await ref.putFile(_filesGallery[currentIndex]);
-                          final url = await ref.getDownloadURL();
-
-                          await widget.chatCollection.add({
-                            'userId': HomePage.loggedUser.id,
-                            'content': url,
-                            'isImage': true,
-                            'isSystem': false,
-                            'createdAt': Timestamp.now(),
-                            'createdBy': HomePage.loggedUser.id,
-                          });
-
-                          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Imagem da galeria ${currentIndex + 1} / ${_filesGallery.length} enviada !!'),
-                            ),
-                          );
-                        }
-
-                        setState(() {
-                          _message = '';
-                          _messageController.clear();
-                          _cameraPaths.clear();
-                          _filesGallery.clear();
-                        });
-
-                        final hasInternet = await CheckInternetConnection.hasInternetConnection();
-
-                        if (!hasInternet) {
-                          _showErrorDialog(
-                            title: const Text('Sem conexão'),
-                            content: const Text('Você está sem conexão com a internet no momento.'
-                              ' Assim que possuir internet a mensagem será enviada, porém, todas as '
-                              'fotos serão perdidas'
-                            )
-                          );
-                        }
-
-                        Timer(
-                          Duration(milliseconds: 300),
-                          () => _scrollController
-                              .jumpTo(_scrollController.position.minScrollExtent));
-
-                        // _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: Duration(seconds: 2), curve: Curves.fastOutSlowIn);  
-                      }
-                      catch (_) {
-                        _showErrorDialog();
-                      }
-                    },
-                  )
-                ],
+                    )
+                  ],
+                ),
               ),
             ],
           ),

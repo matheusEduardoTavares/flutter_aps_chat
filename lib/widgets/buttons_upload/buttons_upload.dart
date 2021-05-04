@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:aps_chat/utils/details_pages/details_pages.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_absolute_path/flutter_absolute_path.dart';
 import 'package:multi_image_picker/multi_image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 typedef AddImages = void Function(List<String>);
+typedef AddFiles = void Function(List<File>);
 typedef AddGalleryImages = void Function(List<File>);
 
 class ButtonsUpload extends StatefulWidget {
@@ -14,11 +16,13 @@ class ButtonsUpload extends StatefulWidget {
     @required this.addImages,
     @required this.messageFocus,
     @required this.addGalleryImages,
+    @required this.addFiles,
   });
 
   final AddImages addImages;
   final AddGalleryImages addGalleryImages;
   final FocusNode messageFocus;
+  final AddFiles addFiles;
 
   @override
   _ButtonsUploadState createState() => _ButtonsUploadState();
@@ -27,6 +31,7 @@ class ButtonsUpload extends StatefulWidget {
 class _ButtonsUploadState extends State<ButtonsUpload> {
   final images = <Asset>[];
   var _isFirstClick = true;
+  FilePickerResult _filePicker;
 
   Future<void> _showErrorDialog({Widget title, Widget content, List<Widget> actions}) => showGeneralDialog(
     context: context,
@@ -171,19 +176,26 @@ class _ButtonsUploadState extends State<ButtonsUpload> {
             });
           }
         ),
-        // FloatingActionButton(
-        //   heroTag: '3',
-        //   mini: true,
-        //   child: Icon(
-        //     Icons.upload_file,
-        //     color: Colors.white,
-        //     size: 20,
-        //   ),
-        //   onPressed: () {
-        //     widget.messageFocus?.unfocus();
-        //     print('Enviar arquivo');
-        //   }
-        // ),
+        FloatingActionButton(
+          heroTag: '3',
+          mini: true,
+          child: const Icon(
+            Icons.upload_file,
+            color: Colors.white,
+            size: 20,
+          ),
+          onPressed: () async {
+            widget.messageFocus?.unfocus();
+            
+            _filePicker = await FilePicker.platform.pickFiles(allowMultiple: true);
+
+            if(_filePicker != null) {
+              List<File> files = _filePicker.paths.map((path) => File(path)).toList();
+
+              widget?.addFiles(files);
+            }
+          }
+        ),
       ],
     );
   }
