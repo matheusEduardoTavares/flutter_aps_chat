@@ -5,7 +5,7 @@ import 'package:aps_chat/pages/home_page/home_page.dart';
 import 'package:aps_chat/pages/login_page/login_page.dart';
 import 'package:aps_chat/pages/signup_page/signup_page.dart';
 import 'package:aps_chat/pages/splash_page/splash_page.dart';
-import 'package:aps_chat/pages/user_data/user_data.dart';
+import 'package:aps_chat/pages/user_data_page/user_data_page.dart';
 import 'package:flutter/material.dart';
 
 abstract class DetailsPages {
@@ -28,7 +28,7 @@ abstract class DetailsPages {
     signUpPage: (ctx) => SignUpPage(),
     homePage: (ctx) => HomePage(),
     authPage: (ctx) => AuthPage(),
-    userDataPage: (ctx) => UserData(),
+    userDataPage: (ctx) => UserDataPage(),
   };
 
   static final detailsPage = <DetailsPage>[

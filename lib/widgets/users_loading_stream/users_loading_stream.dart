@@ -1,5 +1,5 @@
 import 'package:aps_chat/pages/home_page/home_page.dart';
-import 'package:aps_chat/utils/users_list/users_list.dart';
+import 'package:aps_chat/widgets/users_list/users_list.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 

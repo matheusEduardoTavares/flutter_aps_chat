@@ -1,5 +1,5 @@
+import 'package:aps_chat/utils/camera_utilities/camera_utilities.dart';
 import 'package:aps_chat/utils/custom_dialogs/custom_dialogs.dart';
-import 'package:aps_chat/widgets/camera_utilities/camera_utilities.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 

@@ -11,18 +11,18 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class UserData extends StatefulWidget {
-  const UserData({
+class UserDataPage extends StatefulWidget {
+  const UserDataPage({
     this.isUseDrawer = false,
   });
 
   final bool isUseDrawer;
 
   @override
-  _UserDataState createState() => _UserDataState();
+  _UserDataPageState createState() => _UserDataPageState();
 }
 
-class _UserDataState extends State<UserData> {
+class _UserDataPageState extends State<UserDataPage> {
   User _user = FirebaseAuth.instance.currentUser;
   final _users = FirebaseFirestore.instance.collection('users');
 
